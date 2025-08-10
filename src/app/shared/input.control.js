@@ -16,30 +16,41 @@ const InputControl = ({
   const togglePassword = () => setShowPassword((prev) => !prev);
 
   return (
-    <div className="field">
-      <label htmlFor={name} className="block text-900 font-medium mb-2">
+    <div className="mb-4">
+      {/* Label */}
+      <label
+        htmlFor={name}
+        className="block text-left text-gray-800 mb-1 font-medium"
+      >
         {label}
       </label>
 
-      <div className="p-inputgroup">
+      {/* Input with optional password toggle */}
+      <div className="relative">
         <InputText
           id={name}
           type={showPasswordToggle ? (showPassword ? 'text' : 'password') : type}
           {...register(name)}
-          className={classNames({ 'p-invalid': error })}
+          className={classNames(
+            'w-full px-4 py-2 rounded-lg border bg-gray-200 text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-500 transition',
+            { 'border-red-500 ring-1 ring-red-500': error }
+          )}
         />
+
         {showPasswordToggle && (
           <span
-            className="p-inputgroup-addon"
-            style={{ cursor: 'pointer' }}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-red-800"
             onClick={togglePassword}
           >
-            <i className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'}`}></i>
+            <i
+              className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'}`}
+            ></i>
           </span>
         )}
       </div>
 
-      {error && <small className="p-error">{error.message}</small>}
+      {/* Error text */}
+      {error && <small className="text-red-600 text-sm">{error.message}</small>}
     </div>
   );
 };

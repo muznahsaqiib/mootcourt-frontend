@@ -24,7 +24,8 @@ export default function AppToast() {
         toast.current.show({
             severity: severity,
             summary: summary,
-            detail: detail
+            detail: detail,
+           
         });
     };
 

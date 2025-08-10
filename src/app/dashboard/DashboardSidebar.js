@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchCurrentUser } from '../store/slices/authSlice';
 import {
   Home,
   BookOpen,
@@ -10,18 +12,29 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import useDashboardData from './useDashboardData';
 import clsx from 'clsx';
-import { DASHBOARD_ROUTE, PROFILE_ROUTE } from '../../utils/routes.constant';
+import { DASHBOARD_ROUTE, PROFILE_ROUTE, LOGIN_ROUTE } from '@/utils/routes.constant';
 
 const links = [
   { href: DASHBOARD_ROUTE, label: 'Dashboard', icon: Home },
   { href: '/cases', label: 'My Cases', icon: BookOpen },
   { href: PROFILE_ROUTE, label: 'Profile', icon: User },
 ];
+
 export default function DashboardSidebar({ collapsed, setCollapsed }) {
-  const { user } = useDashboardData();
+  const dispatch = useDispatch();
+  const router = useRouter();
   const pathname = usePathname();
+
+  const user = useSelector((state) => state.auth.user);
+
+  useEffect(() => {
+    if (!user) {
+      dispatch(fetchCurrentUser())
+        .unwrap()
+        .catch(() => router.push(LOGIN_ROUTE));
+    }
+  }, [dispatch, router, user]);
 
   const username = user?.username
     ? user.username.charAt(0).toUpperCase() + user.username.slice(1)
@@ -34,6 +47,7 @@ export default function DashboardSidebar({ collapsed, setCollapsed }) {
         collapsed ? 'w-20' : 'w-64'
       )}
     >
+      {/* User info */}
       <div className="flex items-center gap-3 mb-10">
         <div className="w-10 h-10 rounded-full bg-rose-800 flex items-center justify-center text-stone-50 font-bold text-lg">
           {username.charAt(0)}
@@ -50,6 +64,7 @@ export default function DashboardSidebar({ collapsed, setCollapsed }) {
         )}
       </div>
 
+      {/* Collapse button */}
       <div className="flex justify-end mb-6">
         <button
           onClick={() => setCollapsed(!collapsed)}
@@ -59,6 +74,7 @@ export default function DashboardSidebar({ collapsed, setCollapsed }) {
         </button>
       </div>
 
+      {/* Nav links */}
       <nav className="flex flex-col gap-2 flex-1">
         {links.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href;
@@ -78,12 +94,13 @@ export default function DashboardSidebar({ collapsed, setCollapsed }) {
                 size={20}
                 className={clsx(
                   'transition',
-                  isActive ? 'text-white' : 'text-rose-500 group-hover:text-rose-700'
+                  isActive
+                    ? 'text-white'
+                    : 'text-rose-500 group-hover:text-rose-700'
                 )}
               />
               {!collapsed && <span>{label}</span>}
             </Link>
-
           );
         })}
       </nav>

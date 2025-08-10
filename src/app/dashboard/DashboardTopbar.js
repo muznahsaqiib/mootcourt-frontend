@@ -1,28 +1,34 @@
+// DashboardTopbar.js
 'use client';
-
 import React from 'react';
 import Image from 'next/image';
-import useDashboardData from './useDashboardData';
-import styles  from '../styles/styles';
+import { useDispatch } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import { logoutUser } from '../../app/store/slices/authSlice';
+import styles from '../styles/styles';
+import { HOME_ROUTE } from '@/utils/routes.constant';
+
 export default function DashboardTopbar() {
-  const { logout } = useDashboardData();
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    dispatch(logoutUser());
+    router.push(`${HOME_ROUTE}`); 
+  };
 
   return (
     <header className="flex items-center justify-between p-4 bg-stone-50 text-stone-800 shadow-md border-b border-stone-200">
       <div className="flex items-center gap-2">
         <Image
-          src="/logo.png" 
-          alt="MootCoach Logo"
+          src="/logo.png"
+          alt="Mootcourt"
           width={40}
           height={40}
           className="object-contain"
         />
       </div>
-
-      <button
-        onClick={logout}
-        className={styles.primaryBtn}
-      >
+      <button onClick={handleLogout} className={styles.primaryBtn}>
         Logout
       </button>
     </header>

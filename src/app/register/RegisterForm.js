@@ -1,112 +1,97 @@
 'use client';
-
-import { useState } from 'react';
-import useRegister from './useRegister';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../store/slices/authSlice';
+import { useRouter } from 'next/navigation';
 import 'primeicons/primeicons.css';
-import styles from "../styles/styles"
+import styles from "../styles/styles";
+import InputControl from '../shared/input.control';
+
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+
+// ✅ Validation schema
+const registerSchema = yup.object({
+  username: yup.string().required('Username is required'),
+  email: yup.string().email('Invalid email').required('Email is required'),
+  password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref('password'), null], 'Passwords do not match')
+    .required('Confirm Password is required'),
+});
+
 const RegisterForm = ({ toast, onSuccess }) => {
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const { error } = useSelector((state) => state.auth || {});
+
+  // ✅ Setup RHF with Yup validation
   const {
-    username,
-    setUsername,
-    email,
-    setEmail,
-    password,
-    setPassword,
-    error,
-    handleRegister,
-  } = useRegister(toast);
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(registerSchema),
+  });
 
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [confirmError, setConfirmError] = useState('');
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
-
-    if (password !== confirmPassword) {
-      setConfirmError('Passwords do not match');
-      return;
-    }
-
-    setConfirmError('');
-
-    const success = await handleRegister();
-    if (success && onSuccess) {
-      onSuccess();
-    }
+  // ✅ Submit handler
+  const onSubmit = (data) => {
+    dispatch(registerUser({ username: data.username, email: data.email, password: data.password, router, toast }))
+      .unwrap()
+      .then(() => {
+        if (onSuccess) onSuccess();
+      })
+      .catch((err) => {
+        console.error("Registration failed:", err);
+      });
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div>
-        <label className="block text-left text-gray-800 mb-1 font-medium">Username</label>
-        <input
-          type="text"
-          className="w-full px-4 py-2 bg-gray-200 border text-gray-800  border-[#374151] text-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter your Username"
-          required
-        />
-      </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Username */}
+      <InputControl
+        label="Username"
+        name="username"
+        register={register}
+        error={errors.username}
+      />
 
-      <div>
-        <label className="block text-left text-gray-800 mb-1 font-medium">Email</label>
-        <input
-          type="email"
-          className="w-full px-4 py-2 bg-gray-200 border text-gray-800  border-[#374151] text-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your Email"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-left text-gray-800 mb-1 font-medium">Password</label>
-        <div className="relative">
-          <input
-            type={showPassword ? 'text' : 'password'}
-            className="w-full px-4 py-2 bg-gray-200 border text-gray-800  border-[#374151] text-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition pr-10"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-           
-            placeholder="Enter your password"
-            required
-          />
-          <i
-            className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'} absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-red-800`}
-            onClick={() => setShowPassword((prev) => !prev)}
-          ></i>
-        </div>
-      </div>
-      <div>
-        <label className="block text-left text-gray-800 mb-1 font-medium">Confirm Password</label>
-        <div className="relative">
-          <input
-            type={showConfirmPassword ? 'text' : 'password'}
-            className="w-full px-4 py-2 bg-gray-200 border border-[#374151] text-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition pr-10"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm your password"
-            required
-          />
-          <i
-            className={`pi ${showConfirmPassword ? 'pi-eye-slash' : 'pi-eye'} absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-red-800`}
-            onClick={() => setShowConfirmPassword((prev) => !prev)}
-          ></i>
-        </div>
-      </div>
+      {/* Email */}
+      <InputControl
+        label="Email"
+        name="email"
+        type="email"
+        register={register}
+        error={errors.email}
+      />
 
-      {(error || confirmError) && (
-        <p className="text-red-600 text-sm mt-2">{error || confirmError}</p>
-      )}
+      {/* Password */}
+      <InputControl
+        label="Password"
+        name="password"
+        type="password"
+        register={register}
+        error={errors.password}
+        showPasswordToggle
+      />
 
-      <button
-        type="submit"
-        className={styles.primaryBtn}
-      >
+      {/* Confirm Password */}
+      <InputControl
+        label="Confirm Password"
+        name="confirmPassword"
+        type="password"
+        register={register}
+        error={errors.confirmPassword}
+        showPasswordToggle
+      />
+
+      {/* Server Error */}
+      {error && <p className="text-red-600 text-sm">{typeof error === 'object' ? error.detail || JSON.stringify(error) : error}</p>}
+
+
+      {/* Submit */}
+      <button type="submit" className={styles.primaryBtn}>
         Register
       </button>
     </form>
