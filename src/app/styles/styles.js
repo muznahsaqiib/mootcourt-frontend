@@ -2,9 +2,10 @@
 
 
 const styles = {
-  container: "min-h-screen bg-stone-50 text-neutral-900",
+  container: "min-h-screen z-[1] overflow-hidden bg-stone-50/80 text-neutral-900",
 
-  navbar: "flex justify-between items-center px-6 py-4 bg-neutral-100 bg-opacity-90 shadow sticky top-0 z-50",
+
+  navbar: "flex justify-between items-center px-6 py-4 mb-6 bg-neutral-100 bg-opacity-90 shadow fixed top-0 left-0 right-0 z-50",
   logo: "text-2xl font-bold text-neutral-900 no-underline hover:opacity-80",
 
   dropdownBtn: "flex items-center gap-2 bg-rose-800 text-stone-50 px-4 py-2 rounded-md text-sm  shadow-md hover:shadow-lg transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none",
@@ -16,7 +17,7 @@ const styles = {
 
   heroTitle: "text-1xl md:text-5xl font-bold bg-gradient-to-r from-rose-800 to-rose-900 bg-clip-text text-transparent mb-6",
   heroSubtext: "text-lg md:text-xl text-gray-500 mb-6",
-  heromain: "flex flex-col items-center justify-center px-4 py-20 text-center",
+  heromain: "flex flex-col items-center justify-center px-4 py-20 pt-28 text-center",
   toggleContainer: "relative inline-flex bg-stone-200 rounded-md p-1 shadow-sm text-sm font-medium",
   toggleBtn: "relative z-10 px-6 py-2 rounded-md transition font-medium",
   toggleActive: "text-rose-800",
@@ -38,7 +39,7 @@ const styles = {
   
   LoadingSpinner: "fixed inset-0 z-50 bg-blur-100 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300 ease-in-out",
   loadingDiv: "w-20 h-20 border-t-4 border-b-4 border-pink-600 rounded-full animate-spin",
-  div: "absolute inset-0 flex items-center justify-center",
+  div: "absolute inset-0 overflow-hidden flex items-center justify-center",
 };
 
 export default styles;

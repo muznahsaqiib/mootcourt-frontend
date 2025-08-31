@@ -8,6 +8,7 @@ import store from '../store/store';
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import GlobalLoading from '@/components/GlobalLoading';
 
 export default function DashboardLayout({ user, onLogout, children }) {
  
@@ -27,6 +28,7 @@ export default function DashboardLayout({ user, onLogout, children }) {
         
         <div className="flex flex-col flex-1 overflow-hidden">
           <DashboardTopbar user={user} onLogout={onLogout} />
+          <GlobalLoading/>
           <main className="flex-1 overflow-y-auto px-6 py-4 transition-all duration-300">
             {children}
           </main>

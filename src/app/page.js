@@ -16,6 +16,9 @@ import {
 } from 'recharts';
 import styles from './styles/styles';
 import { DASHBOARD_ROUTE,HOME_ROUTE} from '../utils/routes.constant';
+
+import BackgroundParticles from '../components/BackgroundParticles';
+import { ZIndex } from 'tsparticles-engine';
 export default function HomePage() {
   const router = useRouter();
   const toast = useRef(null);
@@ -44,7 +47,11 @@ export default function HomePage() {
   ];
 
   return (
-    <div className={styles.container}>
+    <>
+      <BackgroundParticles/>
+      <div className={`${styles.container} relative z-10`}>
+
+      
       <Toast ref={toast} />
 
       <nav className={styles.navbar}>
@@ -53,28 +60,31 @@ export default function HomePage() {
         </Link>
         
         <div className="flex items-center gap-3 relative">
-          <div className="relative">
-            <button
-              onClick={() => setShowMoreDropdown(!showMoreDropdown)}
-              className={styles.dropdownBtn}
-            ><i className='pi-ellipsis-h'></i>
-              More <ChevronDown size={16} />
-            </button>
-            {showMoreDropdown && (
-              <div className={styles.dropdownMenu}>
-                <button onClick={() => scrollTo(aiRef)} className={styles.dropdownItem}>
-                  Our Vision
-                </button>
-                <button onClick={() => scrollTo(vrRef)} className={styles.dropdownItem}>
-                  About Us
-                </button>
-                <button onClick={() => scrollTo(vrRef)} className={styles.dropdownItem}>
-                  Contact Us
-                </button>
-              </div>
-            )}
+            <div className="relative">
+              <button
+                onClick={() => setShowMoreDropdown(!showMoreDropdown)}
+                className={styles.dropdownBtn}
+              >
+                <i className="pi pi-ellipsis-h mr-2"></i> More <ChevronDown size={16} />
+              </button>
 
-          </div>
+              {showMoreDropdown && (
+                <div className={styles.dropdownMenu}>
+                  <button onClick={() => router.push('/about?section=vision')} className={styles.dropdownItem}>
+                    Our Vision
+                  </button>
+                  <button onClick={() => router.push('/about?section=about')} className={styles.dropdownItem}>
+                    About Us
+                  </button>
+                  <button onClick={() => router.push('/about?section=contact')} className={styles.dropdownItem}>
+                    Contact Us
+                  </button>
+
+                </div>
+              )}
+            </div>
+
+
 
           <button onClick={() => router.push(DASHBOARD_ROUTE)} className={styles.secondaryBtn}>
             Dashboard
@@ -289,5 +299,6 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
