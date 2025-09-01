@@ -18,6 +18,7 @@ export default function DashboardPage() {
   const error = useSelector((state) => state.cases.error);
 
   useEffect(() => {
+    document.title = "Explorer - MootCourt AI";
     dispatch(fetchCurrentUser())
       .unwrap()
       .catch(() => {

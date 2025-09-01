@@ -15,6 +15,7 @@ export default function ProfilePage() {
   const loading = useSelector((state) => state.auth.loading);
  
   useEffect(() => {
+    document.title = "Profile ";
     dispatch(fetchCurrentUser())
       .unwrap()
       .catch(() => router.push(LOGIN_ROUTE));
