@@ -4,7 +4,7 @@ export default function Benches() {
       {/* Bench (Judge's Table) */}
       <div className="absolute top-48 left-1/2 -translate-x-1/2 w-[32rem] h-16 bg-gray-300 rounded-t-3xl shadow-2xl border-t-4 border-pink-500 z-0">
         <span className="absolute left-1/2 -translate-x-1/2 -top-6 bg-pink-300 px-3 py-1 rounded shadow text-sm font-semibold text-gray-800">
-          Judge's Bench
+          Judge&apos;s Bench
         </span>
       </div>
 

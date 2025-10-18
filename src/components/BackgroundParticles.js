@@ -5,15 +5,20 @@ import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 
 export default function BackgroundParticles() {
-    const [init, setInit] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
-        initParticlesEngine(async (engine) => {
-            await loadSlim(engine);
-        }).then(() => setInit(true));
-    }, []);
+        const initializeParticles = async () => {
+            await initParticlesEngine(async (engine) => {
+                await loadSlim(engine);
+            });
+            setIsInitialized(true);
+        };
 
-    if (!init) return null;
+        initializeParticles();
+    }, []); // No missing dependencies — safe
+
+    if (!isInitialized) return null;
 
     return (
         <div
@@ -24,12 +29,14 @@ export default function BackgroundParticles() {
                 width: "100%",
                 height: "100%",
                 zIndex: -1,
+                overflow: "hidden",
             }}
         >
             <Particles
                 id="emoji-particles"
                 options={{
                     fullScreen: { enable: false },
+                    background: { color: "transparent" },
                     particles: {
                         number: { value: 25 },
                         shape: {
