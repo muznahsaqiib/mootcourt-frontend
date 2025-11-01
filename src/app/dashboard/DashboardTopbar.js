@@ -13,8 +13,12 @@ export default function DashboardTopbar() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    dispatch(logoutUser());
-    router.push(`${HOME_ROUTE}`); 
+    try {
+      await dispatch(logoutUser()).unwrap();
+      router.push(HOME_ROUTE); // Redirect to homepage
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (

@@ -102,16 +102,17 @@ export const fetchCurrentUser = createAsyncThunk(
 // --- Logout Thunk ---
 
 export const logoutUser = createAsyncThunk(
-    "auth/logout",
-    async (_, { dispatch }) => {
-        try {
-            await axios.post(LOGOUT_URL, {}, { withCredentials: true });
-        } catch (err) {
-            console.error("Logout failed:", err);
-        }
-        localStorage.removeItem("user");
-        return null;
+  "auth/logout",
+  async (_, { dispatch }) => {
+    try {
+      await axios.post(LOGOUT_URL, {}, { withCredentials: true });
+    } catch (err) {
+      console.error("Logout failed:", err);
     }
+    // Clear user data
+    localStorage.removeItem("user");
+    return null;
+  }
 );
 
 const authSlice = createSlice({
@@ -193,4 +194,3 @@ const authSlice = createSlice({
 });
 export const { clearError } = authSlice.actions;
 export default authSlice.reducer;
-                                                                         

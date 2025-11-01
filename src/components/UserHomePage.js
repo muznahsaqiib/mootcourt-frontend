@@ -1,17 +1,308 @@
-// components/UserHomePage.js
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { Grid, ChevronDown, LogOut } from 'lucide-react';
+import { Toast } from 'primereact/toast';
+import { useRouter } from 'next/navigation';
+import {
+    RadarChart,
+    PolarGrid,
+    PolarAngleAxis,
+    Radar,
+    ResponsiveContainer,
+} from 'recharts';
+import styles from '../app/styles/styles';
+import { DASHBOARD_ROUTE, HOME_ROUTE } from '../utils/routes.constant';
+import BackgroundParticles from './BackgroundParticles';
+
 export default function UserHomePage({ user }) {
+    const router = useRouter();
+    const toast = useRef(null);
+
+    // dropdown refs & local state (separate for each dropdown)
+    const moreRef = useRef(null);
+    const productsRef = useRef(null);
+    const userRef = useRef(null);
+    const [showMoreDropdown, setShowMoreDropdown] = useState(false);
+    const [showProductsDropdown, setShowProductsDropdown] = useState(false);
+    const [showUserDropdown, setShowUserDropdown] = useState(false);
+    // close dropdowns when clicking outside or pressing Escape
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (moreRef.current && !moreRef.current.contains(e.target)) setShowMoreDropdown(false);
+            if (productsRef.current && !productsRef.current.contains(e.target)) setShowProductsDropdown(false);
+            if (userRef.current && !userRef.current.contains(e.target)) setShowUserDropdown(false);
+        };
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+                setShowMoreDropdown(false);
+                setShowProductsDropdown(false);
+                setShowUserDropdown(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        document.addEventListener('keydown', handleEsc);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+            document.removeEventListener('keydown', handleEsc);
+        };
+    }, []);
+
+    const aiRef = useRef(null);
+    const vrRef = useRef(null);
+    const demoRef = useRef(null);
+
+    const scrollTo = (ref) => {
+        setShowDropdown(false);
+        ref.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        document.title = 'MootCourt AI - Personalized Legal Training Dashboard';
+    }, []);
+
+    const rubricScores = [
+        { subject: 'Legal Knowledge', A: 8, fullMark: 10 },
+        { subject: 'Legal Application', A: 7, fullMark: 10 },
+        { subject: 'Organization', A: 9, fullMark: 10 },
+        { subject: 'Judge Interaction', A: 6, fullMark: 10 },
+        { subject: 'Opponent Response', A: 4, fullMark: 5 },
+        { subject: 'Delivery', A: 5, fullMark: 5 },
+    ];
+
+    const handleLogout = async () => {
+        try {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/logout`, {
+                method: 'POST',
+                credentials: 'include',
+            });
+            router.refresh(); // Refresh to trigger server-side auth change
+        } catch (err) {
+            console.error('Logout failed', err);
+        }
+    };
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-                <h1 className="text-3xl font-bold mb-4">
-                    Welcome back, {user.username} 🎉
-                </h1>
-                <p className="text-gray-700">
-                    You’re logged in as: {user.email}
-                </p>
+        <>
+            <BackgroundParticles />
+            <div className={`${styles.container} relative z-10`}>
+                <Toast ref={toast} />
+
+                {/* ===== NAVBAR ===== */}
+                <nav className={styles.navbar}>
+                    <Link href={HOME_ROUTE} className={styles.logo}>
+                        ⚖️
+                    </Link>
+
+                    <div className="flex items-center gap-3 relative">
+                        <div className="relative" ref={moreRef}>
+                            <button
+                                onClick={() => {
+                                    setShowMoreDropdown((s) => !s);
+                                    setShowProductsDropdown(false);
+                                    setShowUserDropdown(false);
+                                }}
+                                className={styles.dropdownBtn}
+                            >
+                                <i className="pi pi-ellipsis-h mr-2"></i> More <ChevronDown size={16} />
+                            </button>
+
+                            {showMoreDropdown && (
+                                <div className={styles.dropdownMenu}>
+                                    <button onClick={() => { router.push('/about?section=vision'); setShowMoreDropdown(false); }} className={styles.dropdownItem}>
+                                        Our Vision
+                                    </button>
+                                    <button onClick={() => { router.push('/about?section=about'); setShowMoreDropdown(false); }} className={styles.dropdownItem}>
+                                        About Us
+                                    </button>
+                                    <button onClick={() => { router.push('/about?section=contact'); setShowMoreDropdown(false); }} className={styles.dropdownItem}>
+                                        Contact Us
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <button onClick={() => router.push(DASHBOARD_ROUTE)} className={styles.secondaryBtn}>
+                            Dashboard
+                        </button>
+
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowProductsDropdown(!showProductsDropdown)}
+                                className={styles.dropdownBtn}
+                                ref={productsRef}
+                            >
+                                <Grid size={16} /> Products <ChevronDown size={16} />
+                            </button>
+                            {showProductsDropdown && (
+                                <div className={styles.dropdownMenu}>
+                                    <button onClick={() => scrollTo(aiRef)} className={styles.dropdownItem}>
+                                        WEB AI MootCourt
+                                    </button>
+                                    <button onClick={() => scrollTo(vrRef)} className={styles.dropdownItem}>
+                                        AI MootCourt in VR
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="relative">
+                            <button
+                                className={styles.dropdownBtn}
+                                onClick={() => setShowUserDropdown(!showUserDropdown)}
+                                ref={userRef}
+                            >
+                                Hi, {user.username} <ChevronDown size={16} />
+                            </button>
+                            {showUserDropdown && (
+                                <div className={styles.dropdownMenu}>
+                                    <button onClick={() => router.push('/profile')} className={styles.dropdownItem}>
+                                        Profile
+                                    </button>
+                                    <button onClick={() => router.push('/history')} className={styles.dropdownItem}>
+                                        Case History
+                                    </button>
+                                    <button
+                                        onClick={handleLogout}
+                                        className={`${styles.dropdownItem} text-rose-500 hover:text-rose-600`}
+                                    >
+                                        <LogOut size={16} className="inline mr-2" />
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </nav>
+
+                {/* ===== HERO SECTION ===== */}
+                <main className={styles.heromain}>
+                    <div className="max-w-2xl w-full">
+                        <p className={styles.heroTitle}>
+                            Elevate Your Legal Training with Intelligent Moot Court Simulations
+                        </p>
+
+                        <p className={styles.heroSubtext}>
+                            See how our AI-powered simulation can sharpen your legal skills in minutes.
+                        </p>
+
+                        <div className="flex flex-wrap justify-center gap-4">
+                            <button
+                                onClick={() => router.push('/dashboard')}
+                                className={styles.primaryBtn}
+                            >
+                                <i className="pi pi-play mr-2" />
+                                <span>Start Practicing Now</span>
+                            </button>
+                            <button
+                                onClick={() => scrollTo(demoRef)}
+                                className={styles.secondaryBtn}
+                            >
+                                ▶ Watch Demo
+                            </button>
+                        </div>
+                    </div>
+                </main>
+
+                {/* ===== STATS SECTION ===== */}
+                <section className="bg-white py-10 px-4 flex justify-center">
+                    <div className={styles.box}>
+                        <div className="text-yellow-500 text-3xl">🏆</div>
+                        <div>
+                            <h3 className="text-xl font-bold text-gray-900">200+ Landmark Cases</h3>
+                            <p className="text-gray-600 text-sm">Practice with real Pakistani court cases</p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ===== AI MOOTCOURT SECTION ===== */}
+                <section ref={aiRef} className="py-24 px-6 bg-white border-t border-stone-200">
+                    <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-stretch">
+                        <div className={styles.evaluationBox}>
+                            <h2 className="text-2xl font-bold text-neutral-900 mb-6">Why AI Moot Court?</h2>
+                            <ul className={styles.evaluationItem}>
+                                <li>Practice anytime — AI is available 24/7</li>
+                                <li>Instant feedback on your arguments, tone, and logic</li>
+                                <li>Smart, adaptive legal scenarios tailored to your skill level</li>
+                                <li>Monitor improvement over time with AI analytics</li>
+                                <li>AI challenges your reasoning like a real bench</li>
+                                <li>Personalized rebuttal generation to sharpen your counter-arguments</li>
+                            </ul>
+                        </div>
+
+                        <div className={styles.chartBox}>
+                            <h4 className="text-xl font-semibold text-center text-neutral-900 mb-6">
+                                Evaluation Score Chart
+                            </h4>
+                            <ResponsiveContainer width="100%" height={350}>
+                                <RadarChart data={rubricScores}>
+                                    <PolarGrid />
+                                    <PolarAngleAxis dataKey="subject" />
+                                    <Radar name="Score" dataKey="A" stroke="#9f1239" fill="#f43f5e" fillOpacity={0.3} />
+                                </RadarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ===== VR SECTION ===== */}
+                <section ref={vrRef} className="py-24 px-6 bg-white border-t border-stone-200">
+                    <div className="max-w-6xl mx-auto text-center">
+                        <h2 className="text-4xl font-bold text-gray-900 mb-4">AI MootCourt in VR</h2>
+                        <p className="text-gray-600 text-lg mb-10">
+                            Step into a virtual courtroom and argue your case in front of an AI-powered judge.
+                            Experience immersive legal training like never before.
+                        </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                            <div className={styles.vrImg}>
+                                <span className="text-gray-500 text-lg">VR Courtroom Preview</span>
+                            </div>
+                            <ul className="text-left text-gray-700 space-y-4 text-lg">
+                                <li><span className="mr-2 text-green-600">✓</span>Fully immersive courtroom environment using VR</li>
+                                <li><span className="mr-2 text-green-600">✓</span>AI-generated arguments and judicial questioning</li>
+                                <li><span className="mr-2 text-green-600">✓</span>Speech-to-text transcription and analysis</li>
+                                <li><span className="mr-2 text-green-600">✓</span>Customizable civil, criminal, and constitutional cases</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ===== DEMO SECTION ===== */}
+                <section ref={demoRef} className="py-24 px-6 bg-white border-t border-stone-200">
+                    <div className="max-w-6xl mx-auto text-center">
+                        <h2 className="text-4xl font-bold text-gray-900 mb-4">See MootCourt AI in Action</h2>
+                        <p className="text-gray-600 text-lg mb-10">
+                            Watch a live walkthrough of how students engage in realistic courtroom simulations powered by AI.
+                        </p>
+
+                        <div className={styles.demoBox}>
+                            <span className="text-gray-500 text-lg">Demo Video Coming Soon</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ===== FOOTER ===== */}
+                <footer className={styles.footer}>
+                    <div className={styles.footer_div}>
+                        <div className={styles.footer_items}>
+                            <div className="text-sm">&copy; {new Date().getFullYear()} Moot AI. All rights reserved.</div>
+                            <div className="flex space-x-4">
+                                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-rose-400 transition">
+                                    <i className="pi pi-github text-lg" />
+                                </a>
+                                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-rose-400 transition">
+                                    <i className="pi pi-twitter text-lg" />
+                                </a>
+                                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-rose-400 transition">
+                                    <i className="pi pi-linkedin text-lg" />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
             </div>
-        </div>
+        </>
     );
 }
