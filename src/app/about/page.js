@@ -35,19 +35,19 @@ export default function AboutPage() {
     return (
         <>
             <Head>
-                <title>About | AI Powered MootCourt in VR</title>
+                <title>About | AI Legal Evaluator</title>
                 <meta
                     name="description"
-                    content="Explore the AI Powered MootCourt in VR project — blending artificial intelligence, virtual reality, and legal education to transform courtroom learning."
+                    content="Discover AI Legal Evaluator — an innovation by Muhammad Hasan combining artificial intelligence and legal expertise to revolutionize case analysis and courtroom training."
                 />
                 <meta
                     name="keywords"
-                    content="AI, VR, MootCourt, legal education, virtual reality, argument evaluation, law training"
+                    content="AI Legal Evaluator, legal AI, lawtech, mootcourt, case evaluation, AI in law, Muhammad Hasan"
                 />
             </Head>
 
             <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-                {/* Our Vision */}
+                {/* ===== Our Vision ===== */}
                 <motion.section
                     ref={visionRef}
                     className="h-screen flex flex-col justify-center items-center p-10 bg-white"
@@ -56,20 +56,19 @@ export default function AboutPage() {
                     viewport={{ once: true }}
                     variants={sectionVariants}
                 >
-                    <h2 className="text-4xl font-bold mb-6 text-center text-rose-600">Our Vision</h2>
+                    <h2 className="text-4xl font-bold mb-6 text-center text-indigo-600">Our Vision</h2>
                     <p className="max-w-3xl text-center text-lg text-gray-700 leading-relaxed">
-                        &quot;Revolutionizing Legal Education Through Immersive Technology&quot;
+                        "Transforming Legal Intelligence Through AI-Powered Evaluation"
                     </p>
                     <p className="max-w-3xl mt-4 text-center text-gray-600">
-                        We envision a future where legal training is accessible, interactive, and technologically advanced.
-                        Our AI-Powered Moot Court in Virtual Reality project bridges the gap between theoretical law education
-                        and practical courtroom experience, integrating AI-driven argument evaluation, dynamic judge simulation,
-                        and immersive VR interactions. Our goal is to empower aspiring lawyers with confidence, analytical skills,
-                        and real-time decision-making capabilities, making legal education engaging, effective, and globally competitive.
+                        At <strong>AI Legal Evaluator</strong>, we envision a world where artificial intelligence simplifies and enhances
+                        the process of legal research, argument evaluation, and advocacy training.
+                        Our mission is to bridge the gap between technology and the legal field — enabling lawyers, students,
+                        and institutions to make faster, data-driven, and fairer legal decisions.
                     </p>
                 </motion.section>
 
-                {/* About Us */}
+                {/* ===== About Us ===== */}
                 <motion.section
                     ref={aboutRef}
                     className="h-screen flex flex-col justify-center items-center p-10 bg-gray-100"
@@ -78,34 +77,32 @@ export default function AboutPage() {
                     viewport={{ once: true }}
                     variants={sectionVariants}
                 >
-                    <h2 className="text-4xl font-bold mb-6 text-center text-rose-600">About Us</h2>
+                    <h2 className="text-4xl font-bold mb-6 text-center text-indigo-600">About Us</h2>
                     <p className="max-w-4xl text-center text-lg text-gray-700 leading-relaxed">
-                        &quot;Blending AI, VR, and Legal Expertise&quot;
+                        "Where Legal Precision Meets Artificial Intelligence"
                     </p>
 
                     <div className="mt-6 max-w-4xl text-gray-700 text-lg space-y-4">
-                        <p><strong className="text-rose-500">Team Members:</strong></p>
+                        <p><strong className="text-indigo-500">Founder:</strong></p>
                         <ul className="list-disc ml-6 space-y-1">
-                            <li><strong>Muznah Saqib</strong></li>
+                            <li><strong>Muhammad Hasan</strong> — Computer Engineer &amp; LegalTech Innovator</li>
                         </ul>
 
-                        <p><strong className="text-rose-500">Project Highlights:</strong></p>
+                        <p><strong className="text-indigo-500">What We Do:</strong></p>
                         <ul className="list-disc ml-6 space-y-1">
-                            <li>AI acts as <strong>opposing counsel</strong>, <strong>judge</strong>, and <strong>evaluator</strong>.</li>
-                            <li>Real-time <strong>voice interaction</strong> powered by STT &amp; TTS.</li>
-                            <li>Fully <strong>immersive VR courtroom</strong> environment built in Unity3D.</li>
-                            <li>Tailored for realistic legal scenarios with global adaptability.</li>
-                            <li>Ideal for <strong>legal education, training, and competitions</strong>.</li>
+                            <li>Develop AI tools to <strong>analyze, score, and evaluate</strong> legal arguments.</li>
+                            <li>Enable <strong>AI-assisted moot court simulations</strong> for students and professionals.</li>
+                            <li>Integrate <strong>machine learning and NLP</strong> to assess reasoning, evidence, and tone.</li>
+                            <li>Offer smart dashboards for <strong>law firms and institutions</strong> to evaluate case performance.</li>
                         </ul>
 
                         <p className="mt-4 text-gray-600">
-                            We leverage fine-tuned LLMs, NLP task routing, and immersive VR to create an interactive learning environment,
-                            transforming how students practice, learn, and excel in law.
+                            The platform merges data science with legal reasoning to make justice education and litigation preparation more efficient and accessible worldwide.
                         </p>
                     </div>
                 </motion.section>
 
-                {/* Contact Us */}
+                {/* ===== Contact Us ===== */}
                 <motion.section
                     ref={contactRef}
                     className="h-screen flex flex-col justify-center items-center p-10 bg-white"
@@ -114,19 +111,19 @@ export default function AboutPage() {
                     viewport={{ once: true }}
                     variants={sectionVariants}
                 >
-                    <h2 className="text-4xl font-bold mb-6 text-center text-rose-600">Contact Us</h2>
+                    <h2 className="text-4xl font-bold mb-6 text-center text-indigo-600">Contact Us</h2>
                     <p className="max-w-3xl text-center text-lg text-gray-700 leading-relaxed">
-                        Get in touch, collaborate, or follow our journey!
+                        We'd love to connect with innovators, law schools, and AI enthusiasts.
                     </p>
 
                     <div className="mt-6 text-center text-gray-700 space-y-3">
-                        <p><strong>Email:</strong> <a href="mailto:aimootcourt2025@hotmail.com" className="text-rose-500 hover:underline transition">aimootcourt2025@hotmail.com</a></p>
-                        <p><strong>LinkedIn:</strong> <a href="https://linkedin.com/in/your-linkedin" target="_blank" rel="noopener noreferrer" className="text-rose-500 hover:underline transition">linkedin.com/in/your-linkedin</a></p>
+                        <p><strong>Email:</strong> <a href="mailto:ailegalevaluator@gmail.com" className="text-indigo-500 hover:underline transition">ailegalevaluator@gmail.com</a></p>
+                        <p><strong>LinkedIn:</strong> <a href="https://linkedin.com/in/muhammad-hasan" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline transition">linkedin.com/in/muhammad-hasan</a></p>
 
-                        <div className="flex justify-center gap-6 mt-4 text-rose-500">
-                            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-rose-400 transition"><i className="pi pi-github text-2xl" /></a>
-                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-rose-400 transition"><i className="pi pi-twitter text-2xl" /></a>
-                            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-rose-400 transition"><i className="pi pi-linkedin text-2xl" /></a>
+                        <div className="flex justify-center gap-6 mt-4 text-indigo-500">
+                            <a href="https://github.com/Hasan105" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition"><i className="pi pi-github text-2xl" /></a>
+                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition"><i className="pi pi-twitter text-2xl" /></a>
+                            <a href="https://linkedin.com/in/muhammad-hasan" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition"><i className="pi pi-linkedin text-2xl" /></a>
                         </div>
                     </div>
                 </motion.section>
