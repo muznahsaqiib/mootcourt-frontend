@@ -38,16 +38,16 @@ export default function AboutPage() {
                 <title>About | AI Legal Evaluator</title>
                 <meta
                     name="description"
-                    content="Discover AI Legal Evaluator — an innovation by Muhammad Hasan combining artificial intelligence and legal expertise to revolutionize case analysis and courtroom training."
+                    content="Learn about AI Legal Evaluator — founded by Muhammad Hasan to revolutionize legal evaluation, argument scoring, and courtroom analysis through AI."
                 />
                 <meta
                     name="keywords"
-                    content="AI Legal Evaluator, legal AI, lawtech, mootcourt, case evaluation, AI in law, Muhammad Hasan"
+                    content="AI Legal Evaluator, LegalTech, AI law, case analysis, Muhammad Hasan, argument evaluator"
                 />
             </Head>
 
             <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-                {/* ===== Our Vision ===== */}
+                {/* ===== Vision Section ===== */}
                 <motion.section
                     ref={visionRef}
                     className="h-screen flex flex-col justify-center items-center p-10 bg-white"
@@ -56,19 +56,18 @@ export default function AboutPage() {
                     viewport={{ once: true }}
                     variants={sectionVariants}
                 >
-                    <h2 className="text-4xl font-bold mb-6 text-center text-indigo-600">Our Vision</h2>
+                    <h2 className="text-4xl font-bold mb-6 text-center text-rose-600">Our Vision</h2>
                     <p className="max-w-3xl text-center text-lg text-gray-700 leading-relaxed">
-                        "Transforming Legal Intelligence Through AI-Powered Evaluation"
+                        "Empowering Legal Excellence Through Artificial Intelligence"
                     </p>
                     <p className="max-w-3xl mt-4 text-center text-gray-600">
-                        At <strong>AI Legal Evaluator</strong>, we envision a world where artificial intelligence simplifies and enhances
-                        the process of legal research, argument evaluation, and advocacy training.
-                        Our mission is to bridge the gap between technology and the legal field — enabling lawyers, students,
-                        and institutions to make faster, data-driven, and fairer legal decisions.
+                        At <strong>AI Legal Evaluator</strong>, our vision is to transform how legal reasoning is understood, assessed, and improved.
+                        We believe in creating an ecosystem where lawyers, students, and judges can rely on intelligent systems
+                        for analytical insight, fairness, and innovation in the justice process.
                     </p>
                 </motion.section>
 
-                {/* ===== About Us ===== */}
+                {/* ===== About Us Section ===== */}
                 <motion.section
                     ref={aboutRef}
                     className="h-screen flex flex-col justify-center items-center p-10 bg-gray-100"
@@ -77,32 +76,33 @@ export default function AboutPage() {
                     viewport={{ once: true }}
                     variants={sectionVariants}
                 >
-                    <h2 className="text-4xl font-bold mb-6 text-center text-indigo-600">About Us</h2>
+                    <h2 className="text-4xl font-bold mb-6 text-center text-rose-600">About Us</h2>
                     <p className="max-w-4xl text-center text-lg text-gray-700 leading-relaxed">
-                        "Where Legal Precision Meets Artificial Intelligence"
+                        "Where AI Meets Legal Insight"
                     </p>
 
                     <div className="mt-6 max-w-4xl text-gray-700 text-lg space-y-4">
-                        <p><strong className="text-indigo-500">Founder:</strong></p>
+                        <p><strong className="text-rose-500">Founder:</strong></p>
                         <ul className="list-disc ml-6 space-y-1">
-                            <li><strong>Muhammad Hasan</strong> — Computer Engineer &amp; LegalTech Innovator</li>
+                            <li><strong>Muhammad Hasan</strong> — Computer Engineer &amp; Founder of AI Legal Evaluator</li>
                         </ul>
 
-                        <p><strong className="text-indigo-500">What We Do:</strong></p>
+                        <p><strong className="text-rose-500">What We Do:</strong></p>
                         <ul className="list-disc ml-6 space-y-1">
-                            <li>Develop AI tools to <strong>analyze, score, and evaluate</strong> legal arguments.</li>
-                            <li>Enable <strong>AI-assisted moot court simulations</strong> for students and professionals.</li>
-                            <li>Integrate <strong>machine learning and NLP</strong> to assess reasoning, evidence, and tone.</li>
-                            <li>Offer smart dashboards for <strong>law firms and institutions</strong> to evaluate case performance.</li>
+                            <li>Build AI systems that <strong>evaluate and score legal arguments</strong> for clarity, logic, and persuasiveness.</li>
+                            <li>Assist <strong>law firms and students</strong> in improving advocacy and analytical reasoning.</li>
+                            <li>Use <strong>Natural Language Processing (NLP)</strong> to analyze tone, structure, and legal soundness.</li>
+                            <li>Power <strong>AI-based moot court simulations</strong> for law education and training.</li>
                         </ul>
 
                         <p className="mt-4 text-gray-600">
-                            The platform merges data science with legal reasoning to make justice education and litigation preparation more efficient and accessible worldwide.
+                            Our goal is to redefine legal evaluation through intelligent automation, empowering
+                            the next generation of lawyers and researchers to make smarter, evidence-driven decisions.
                         </p>
                     </div>
                 </motion.section>
 
-                {/* ===== Contact Us ===== */}
+                {/* ===== Contact Section ===== */}
                 <motion.section
                     ref={contactRef}
                     className="h-screen flex flex-col justify-center items-center p-10 bg-white"
@@ -111,19 +111,19 @@ export default function AboutPage() {
                     viewport={{ once: true }}
                     variants={sectionVariants}
                 >
-                    <h2 className="text-4xl font-bold mb-6 text-center text-indigo-600">Contact Us</h2>
+                    <h2 className="text-4xl font-bold mb-6 text-center text-rose-600">Contact Us</h2>
                     <p className="max-w-3xl text-center text-lg text-gray-700 leading-relaxed">
-                        We'd love to connect with innovators, law schools, and AI enthusiasts.
+                        Connect with us for collaborations, partnerships, or inquiries.
                     </p>
 
                     <div className="mt-6 text-center text-gray-700 space-y-3">
-                        <p><strong>Email:</strong> <a href="mailto:ailegalevaluator@gmail.com" className="text-indigo-500 hover:underline transition">ailegalevaluator@gmail.com</a></p>
-                        <p><strong>LinkedIn:</strong> <a href="https://linkedin.com/in/muhammad-hasan" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline transition">linkedin.com/in/muhammad-hasan</a></p>
+                        <p><strong>Email:</strong> <a href="mailto:ailegalevaluator@gmail.com" className="text-rose-500 hover:underline transition">ailegalevaluator@gmail.com</a></p>
+                        <p><strong>LinkedIn:</strong> <a href="https://linkedin.com/in/muhammad-hasan" target="_blank" rel="noopener noreferrer" className="text-rose-500 hover:underline transition">linkedin.com/in/muhammad-hasan</a></p>
 
-                        <div className="flex justify-center gap-6 mt-4 text-indigo-500">
-                            <a href="https://github.com/Hasan105" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition"><i className="pi pi-github text-2xl" /></a>
-                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition"><i className="pi pi-twitter text-2xl" /></a>
-                            <a href="https://linkedin.com/in/muhammad-hasan" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition"><i className="pi pi-linkedin text-2xl" /></a>
+                        <div className="flex justify-center gap-6 mt-4 text-rose-500">
+                            <a href="https://github.com/Hasan105" target="_blank" rel="noopener noreferrer" className="hover:text-rose-400 transition"><i className="pi pi-github text-2xl" /></a>
+                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-rose-400 transition"><i className="pi pi-twitter text-2xl" /></a>
+                            <a href="https://linkedin.com/in/muhammad-hasan" target="_blank" rel="noopener noreferrer" className="hover:text-rose-400 transition"><i className="pi pi-linkedin text-2xl" /></a>
                         </div>
                     </div>
                 </motion.section>
