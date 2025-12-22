@@ -1,48 +1,55 @@
+'use client';
+
+import React from 'react';
+
 export default function InputControls({
   userInput,
   setUserInput,
   handleSubmitArgument,
   clearInput,
+  loading = false,
+  onEndSession,
+  sessionId,
 }) {
+  const disabled = loading || !sessionId;
+
   return (
-    <div className="absolute left-1/2 bottom-6 -translate-x-1/2 z-30 flex justify-center w-full">
-      <div className="flex gap-6 items-start bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl px-10 py-6 border border-blue-400 transition-all duration-300 ease-in-out w-[700px]">
+    <div className="w-full p-4 bg-white/90 flex gap-3 items-center justify-center border-t">
+      <input
+        value={userInput}
+        onChange={(e) => setUserInput(e.target.value)}
+        placeholder={sessionId ? "Type your argument..." : "Waiting for session to start..."}
+        className="px-4 py-2 rounded-full border w-80"
+        disabled={disabled}
+      />
 
-        {/* Left Section - Input & Buttons */}
-        <div className="flex flex-col gap-4 w-1/2">
-          <input
-            type="text"
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            placeholder="Craft your argument..."
-            className="px-5 py-3 rounded-md border border-pink-400 focus:outline-none focus:ring-4 focus:ring-pink-300 text-blue-900 placeholder-gray-500 transition-all duration-200 ease-in-out shadow-inner"
-          />
-          <div className="flex gap-3">
-            <button
-              onClick={handleSubmitArgument}
-              className="flex-1 bg-gradient-to-r from-pink-200 via-pink-100 to-blue-200 text-gray-900 px-6 py-2.5 rounded-md shadow-lg hover:scale-105 hover:from-pink-500 hover:to-blue-700 transition-all duration-300 font-semibold"
-            >
-             Submit
-            </button>
-            <button
-              onClick={clearInput}
-              className="flex-1 bg-pink-200 text-blue-800 px-5 py-2.5 rounded-md shadow hover:bg-gray-300 hover:scale-105 font-medium transition-all duration-300"
-            >
-             Clear
-            </button>
-          </div>
-        </div>
+      <button
+        onClick={() => {
+          if (!sessionId) return;
+          handleSubmitArgument();
+        }}
+        disabled={disabled}
+        title={disabled ? (loading ? "Loading…" : "Waiting for session") : "Submit argument"}
+        className={`px-6 py-2 rounded-full font-semibold ${disabled ? 'bg-gray-300 text-gray-600' : 'bg-gradient-to-r from-pink-600 to-purple-600 text-white'}`}
+      >
+        {loading ? 'Sending…' : 'Submit'}
+      </button>
 
-        {/* Right Section - Live Preview */}
-        <div className="w-1/2 bg-white border border-gray-300 rounded-xl p-4 shadow-inner">
-          <p className="text-sm font-semibold text-gray-600 mb-2">Preview:</p>
-          <div className="text-blue-900 text-base whitespace-pre-wrap break-words max-h-32 overflow-auto">
-            {userInput || (
-              <span className="text-gray-400 italic">Start typing to preview your argument...</span>
-            )}
-          </div>
-        </div>
-      </div>
+      <button
+        onClick={clearInput}
+        className="px-4 py-2 rounded-full bg-gray-100"
+      >
+        Clear
+      </button>
+
+      {onEndSession && (
+        <button
+          onClick={onEndSession}
+          className="px-4 py-2 rounded-full bg-rose-500 text-white"
+        >
+          Quit & Save
+        </button>
+      )}
     </div>
   );
 }
