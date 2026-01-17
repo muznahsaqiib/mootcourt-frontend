@@ -1,4 +1,7 @@
 export default function JudgePanel({ judgeQuestion }) {
+  // Handle both string and array formats
+  const questions = Array.isArray(judgeQuestion) ? judgeQuestion : (judgeQuestion ? [judgeQuestion] : []);
+
   return (
     <div className="absolute top-24 left-1/2 -translate-x-1/2 flex gap-16 z-10">
       <div className="flex flex-col items-center relative">
@@ -7,9 +10,16 @@ export default function JudgePanel({ judgeQuestion }) {
         </div>
         <span className="text-xs mt-1 font-semibold text-pink-600">Judge 1</span>
 
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white border border-pink-300 rounded-lg px-4 py-2 text-xs shadow font-medium z-20 max-w-xs text-center">
-          {judgeQuestion}
-        </div>
+        {questions.length > 0 && (
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white border border-pink-300 rounded-lg px-4 py-2 text-xs shadow font-medium z-20 max-w-xs text-center">
+            <div className="font-semibold mb-1">Judge Questions:</div>
+            <ul className="text-left space-y-1">
+              {questions.map((q, i) => (
+                <li key={i} className="text-xs">• {q}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col items-center">

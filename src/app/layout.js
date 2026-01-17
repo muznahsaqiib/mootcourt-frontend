@@ -1,6 +1,5 @@
 'use client';
 
-import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
 import 'primereact/resources/primereact.min.css';
@@ -13,15 +12,12 @@ import store from './store/store';
 //import LoadingSpinner from '@/components/LoadingSpinner';
 import GlobalLoading from '@/components/GlobalLoading';
 
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
-const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
-
 export default function RootLayout({ children }) {
 
 
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className="antialiased">
      
           <Provider store={store}>
             <GlobalLoading/>
