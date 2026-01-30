@@ -2,90 +2,141 @@
 
 import { useSelector } from 'react-redux';
 
-export default function ProfileComponent({ user, stats }) {
+export default function ProfileComponent({ user, stats = [] }) {
   const loading = useSelector((state) => state.loading.isLoading);
 
+  const totalSessions = stats.length;
+
+  /* ---------- SAFE HELPERS ---------- */
+  const avg = (arr) =>
+    arr.length === 0
+      ? '—'
+      : (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1);
+
+  /* ---------- ANALYTICS ---------- */
+  const avgScore = totalSessions
+    ? avg(stats.map(s => s.result?.user_score).filter(Boolean))
+    : '—';
+
+  const totalPracticeMinutes = Math.floor(
+    stats.reduce((sum, s) => sum + (s.duration_seconds || 0), 0) / 60
+  );
+
+  const clarity = avg(
+    stats
+      .map(s => s.result?.detailed_scores_user?.clarity)
+      .filter(v => typeof v === 'number')
+  );
+
+  const responsiveness = avg(
+    stats
+      .map(s => s.result?.detailed_scores_user?.responsiveness)
+      .filter(v => typeof v === 'number')
+  );
+
+  const structure = avg(
+    stats
+      .map(s => s.result?.detailed_scores_user?.structure)
+      .filter(v => typeof v === 'number')
+  );
+
+  /* ---------- UI ---------- */
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-start bg-stone-50 text-stone-800 overflow-hidden py-20 px-4">
+    <div className="min-h-screen bg-stone-50 py-20 px-4">
 
       {user ? (
-        <div className="relative z-10 bg-white rounded-3xl shadow-2xl p-10 w-full max-w-3xl animate-fadeInUp border border-stone-200 flex flex-col md:flex-row gap-10">
+        <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-10 flex flex-col md:flex-row gap-10">
 
-          {/* LEFT PANEL - Basic Info */}
-          <div className="flex flex-col items-center md:w-1/3">
-            <div className="w-28 h-28 rounded-full bg-rose-200 flex items-center justify-center text-5xl text-rose-800 font-bold mb-6">
-              {user.username.charAt(0).toUpperCase()}
+          {/* LEFT */}
+          <div className="md:w-1/3 flex flex-col items-center">
+            <div className="w-28 h-28 rounded-full bg-rose-200 flex items-center justify-center text-5xl font-bold text-rose-800">
+              {user.username[0].toUpperCase()}
             </div>
 
-            <h1 className="text-2xl font-extrabold text-center text-rose-800 mb-6">
+            <h1 className="mt-4 text-2xl font-extrabold text-rose-800">
               {user.username}
             </h1>
 
-            <div className="space-y-3 w-full">
-              <div className="flex justify-between border-b border-stone-200 pb-2">
-                <span className="font-semibold text-stone-700">Email</span>
-                <span className="text-stone-900">{user.email}</span>
+            <div className="mt-6 w-full space-y-3 text-sm">
+              <div className="flex justify-between border-b pb-2">
+                <span>Email</span>
+                <span>{user.email}</span>
               </div>
-              <div className="flex justify-between border-b border-stone-200 pb-2">
-                <span className="font-semibold text-stone-700">Joined</span>
-                <span className="text-stone-900">{user.joinedDate || 'N/A'}</span>
+            </div>
+          </div>
+
+          {/* RIGHT */}
+          <div className="md:w-2/3 space-y-8">
+
+            {/* SUMMARY */}
+            <div>
+              <h2 className="text-xl font-bold mb-4">Analytics</h2>
+              <div className="grid grid-cols-3 gap-4">
+                <Stat label="Total Sessions" value={totalSessions} />
+                <Stat label="Avg Score" value={avgScore} />
+                <Stat label="Practice Time" value={`${totalPracticeMinutes}m`} />
               </div>
             </div>
 
-            <button className="mt-8 w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-3 rounded-xl transition duration-300 shadow-md">
-              Edit Profile
-            </button>
-          </div>
+            {/* PERFORMANCE */}
+            <div>
+              <h3 className="font-bold mb-3">Performance Insights</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <Stat label="Clarity" value={clarity} />
+                <Stat label="Responsiveness" value={responsiveness} />
+                <Stat label="Structure" value={structure} />
+              </div>
+            </div>
 
-          {/* RIGHT PANEL - Stats */}
-          <div className="md:w-2/3 flex flex-col gap-6">
-            <h2 className="text-xl font-bold text-stone-800">Case History</h2>
+            {/* HISTORY */}
+            <div>
+              <h3 className="font-bold mb-3">Session History</h3>
 
-            {stats && stats.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {stats.map((item, index) => (
-                  <div key={index} className="bg-stone-100 p-4 rounded-xl shadow-sm flex flex-col gap-2">
-                    <span className="font-semibold text-stone-700">{item.caseTitle}</span>
-                    <div className="flex justify-between">
-                      <span className="text-stone-600">Result:</span>
-                      <span className={item.result === 'Won' ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
-                        {item.result}
-                      </span>
+              {stats.length === 0 ? (
+                <p className="text-stone-500">No sessions yet.</p>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {stats.map((s) => (
+                    <div
+                      key={s.session_id}
+                      className="p-4 rounded-xl bg-stone-100 flex justify-between"
+                    >
+                      <div>
+                        <p className="font-semibold">
+                          {s.case_title || `Case ${s.case_id}`}
+                        </p>
+                        <p className="text-sm text-stone-600">
+                          {Math.floor((s.duration_seconds || 0) / 60)}m
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-sm text-stone-500">Score</p>
+                        <p className="text-xl font-bold">
+                          {s.result?.user_score ?? '—'}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-stone-600">Date:</span>
-                      <span className="text-stone-800">{item.date}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-stone-500 font-medium">No case history available.</div>
-            )}
-
-            {/* Summary cards */}
-            <div className="mt-6 grid grid-cols-3 gap-4">
-              <div className="bg-blue-100 rounded-xl p-4 text-center shadow-sm">
-                <p className="font-semibold text-blue-800 text-lg">{stats?.filter(s => s.result === 'Won').length || 0}</p>
-                <p className="text-stone-600 text-sm">Cases Won</p>
-              </div>
-              <div className="bg-red-100 rounded-xl p-4 text-center shadow-sm">
-                <p className="font-semibold text-red-800 text-lg">{stats?.filter(s => s.result === 'Lost').length || 0}</p>
-                <p className="text-stone-600 text-sm">Cases Lost</p>
-              </div>
-              <div className="bg-yellow-100 rounded-xl p-4 text-center shadow-sm">
-                <p className="font-semibold text-yellow-800 text-lg">{stats?.length || 0}</p>
-                <p className="text-stone-600 text-sm">Total Cases</p>
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
           </div>
         </div>
       ) : !loading && (
-        <div className="relative z-10 text-center text-red-500 text-xl font-medium">
-          Could not load profile.
-        </div>
+        <p className="text-center text-red-500">Profile not found</p>
       )}
+    </div>
+  );
+}
+
+/* ---------- SMALL COMPONENT ---------- */
+function Stat({ label, value }) {
+  return (
+    <div className="bg-stone-100 rounded-xl p-4 text-center">
+      <p className="text-sm text-stone-500">{label}</p>
+      <p className="text-xl font-bold">{value}</p>
     </div>
   );
 }

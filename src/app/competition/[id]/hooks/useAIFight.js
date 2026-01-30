@@ -1,42 +1,36 @@
-// src/app/competition/[id]/hooks/useAIFight.js
-
 import { useState, useCallback } from "react";
-import {
-  initiateMoot as apiInitiateMoot,
-  getMootStatus as apiGetStatus,
-  getMootTranscript as apiGetTranscript,
-  submitPetitionerArgument as apiSubmitPetitionerArgument,
-  submitPetitionerResponse as apiSubmitPetitionerResponse,
-  submitRespondentRebuttal as apiSubmitRespondentRebuttal,
-  submitRespondentResponse as apiSubmitRespondentResponse,
-  getJudgeQuestions as apiGetJudgeQuestions,
-  concludeMoot as apiConcludeMoot
-} from "../../../../services/api"; // Using absolute import
+
+const API = "http://localhost:8000";
 
 export const useAIFight = () => {
   const [sessionId, setSessionId] = useState(null);
-  const [status, setStatus] = useState(null);
   const [transcript, setTranscript] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // ==================== Initiate Moot ====================
-  const initiateMoot = useCallback(async (caseId, maxRounds = 2) => {
-    if (!caseId) throw new Error("caseId is required to initiate moot");
+  const [nextTurn, setNextTurn] = useState(null);
+  const [awaitingFrom, setAwaitingFrom] = useState(null);
+  const [judgeQuestion, setJudgeQuestion] = useState(null);
+
+  // ================= START SESSION =================
+  const initiateMoot = useCallback(async (caseId, caseType) => {
     setLoading(true);
-    setError(null);
     try {
-      console.log("Initiating moot with:", { caseId, maxRounds });
-      const data = await apiInitiateMoot(String(caseId), maxRounds);
-      console.log("Moot initiated:", data);
-      setSessionId(data.session_id);
-      setStatus({
-        next_turn: data.next_turn,
-        awaiting_from: data.awaiting_from
+      const res = await fetch(`${API}/moot/initiate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ case_id: caseId, case_type: caseType }),
       });
+      const data = await res.json();
+
+      setSessionId(data.session_id);
+      setNextTurn(data.next_turn);
+      setAwaitingFrom("PETITIONER");
+      setTranscript([]);
+      setJudgeQuestion(null);
+
       return data;
     } catch (err) {
-      console.error("Failed to initiate moot:", err);
       setError(err);
       throw err;
     } finally {
@@ -44,166 +38,102 @@ export const useAIFight = () => {
     }
   }, []);
 
-  // ==================== Get Status ====================
-  const getStatus = useCallback(async () => {
-    if (!sessionId) throw new Error("No sessionId available");
+  // ================= HANDLE USER TURN =================
+  const submitUserTurn = useCallback(
+    async (text) => {
+      if (!sessionId || !nextTurn) return;
+      setLoading(true);
+
+      try {
+        let endpoint = "";
+
+        // ===== USER TURNS =====
+        if (nextTurn === "PETITIONER_ARGUMENT") endpoint = "/moot/petitioner/argument";
+        else if (nextTurn === "PETITIONER_REPLY_TO_JUDGE") endpoint = "/moot/petitioner/reply";
+        else if (nextTurn === "PETITIONER_REBUTTAL") endpoint = "/moot/petitioner/rebut";
+        else throw new Error(`Unknown user turn: ${nextTurn}`);
+
+        const res = await fetch(`${API}${endpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId, text }),
+        });
+        const data = await res.json();
+
+        setTranscript((prev) => [
+          ...prev,
+          { role: "petitioner", text, timestamp: new Date() },
+          ...(data.judge_question
+            ? [{ role: "judge", text: data.judge_question, timestamp: new Date() }]
+            : []),
+        ]);
+
+        setNextTurn(data.next_turn);
+        setJudgeQuestion(data.judge_question || null);
+        setAwaitingFrom(data.next_turn === "SESSION_END" ? null : "PETITIONER");
+
+        // ===== IF AI RESPONDENT TURN =====
+        if (data.next_turn === "RESPONDENT_RAG") {
+          const ragRes = await fetch(`${API}/moot/respondent/rag`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_id: sessionId }),
+          });
+
+          const ragData = await ragRes.json();
+
+          setTranscript((prev) => [
+            ...prev,
+            { role: "respondent", text: ragData.respondent_argument, timestamp: new Date() },
+            ...(ragData.judge_question
+              ? [{ role: "judge", text: ragData.judge_question, timestamp: new Date() }]
+              : []),
+            ...(ragData.respondent_reply
+              ? [{ role: "respondent", text: ragData.respondent_reply, timestamp: new Date() }]
+              : []),
+          ]);
+
+          setNextTurn(ragData.next_turn);
+          setAwaitingFrom(ragData.next_turn?.startsWith("PETITIONER") ? "PETITIONER" : null);
+          setJudgeQuestion(ragData.judge_question || null);
+        }
+
+        return data;
+      } catch (err) {
+        setError(err);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [sessionId, nextTurn]
+  );
+
+  // ================= END SESSION =================
+  const endMootSession = useCallback(async () => {
+    if (!sessionId) return; // just check session exists
     setLoading(true);
-    setError(null);
+
     try {
-      const data = await apiGetStatus(sessionId);
-      setStatus({
-        next_turn: data.current_turn,
-        awaiting_from: data.current_party  // Updated to match backend
+      const res = await fetch(`${API}/moot/evaluate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId }),
       });
-      return data;
-    } catch (err) {
-      console.error("Failed to get status:", err);
-      setError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId]);
+      const data = await res.json();
 
-  // ==================== Get Transcript ====================
-  const getTranscript = useCallback(async () => {
-    if (!sessionId) throw new Error("No sessionId available");
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiGetTranscript(sessionId);
-      setTranscript(data);
-      return data;
-    } catch (err) {
-      console.error("Failed to get transcript:", err);
-      setError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId]);
+      setTranscript((prev) => [
+        ...prev,
+        { role: "system", text: "Session ended. Evaluation complete.", timestamp: new Date() },
+        { role: "evaluation", text: JSON.stringify(data, null, 2), timestamp: new Date() },
+      ]);
 
-  // ==================== Petitioner Actions ====================
-  const submitPetitionerArgument = useCallback(async (argument) => {
-    if (!sessionId) throw new Error("No sessionId available");
-    if (!argument) throw new Error("Argument cannot be empty");
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiSubmitPetitionerArgument(sessionId, argument);
-      console.log("Petitioner argument submitted:", data);
-      setStatus({
-        next_turn: data.next_turn,
-        awaiting_from: data.next_party
-      });
-      return data;
-    } catch (err) {
-      console.error("Failed to submit petitioner argument:", err);
-      setError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId]);
+      setNextTurn(null);
+      setAwaitingFrom(null);
+      setJudgeQuestion(null);
 
-  const submitPetitionerResponse = useCallback(async (response) => {
-    if (!sessionId) throw new Error("No sessionId available");
-    if (!response) throw new Error("Response cannot be empty");
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiSubmitPetitionerResponse(sessionId, response);
-      console.log("Petitioner response submitted:", data);
-      setStatus({
-        next_turn: data.next_turn,
-        awaiting_from: data.next_party
-      });
       return data;
     } catch (err) {
-      console.error("Failed to submit petitioner response:", err);
-      setError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId]);
-
-  // ==================== Respondent Actions ====================
-  const submitRespondentRebuttal = useCallback(async (argument) => {
-    if (!sessionId) throw new Error("No sessionId available");
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiSubmitRespondentRebuttal(sessionId, argument || "");
-      console.log("Respondent rebuttal submitted:", data);
-      setStatus({
-        next_turn: data.next_turn,
-        awaiting_from: data.next_party
-      });
-      return data;
-    } catch (err) {
-      console.error("Failed to submit respondent rebuttal:", err);
-      setError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId]);
-
-  const submitRespondentResponse = useCallback(async (response) => {
-    if (!sessionId) throw new Error("No sessionId available");
-    if (!response) throw new Error("Response cannot be empty");
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiSubmitRespondentResponse(sessionId, response);
-      console.log("Respondent response submitted:", data);
-      setStatus({
-        next_turn: data.next_turn,
-        awaiting_from: data.next_party
-      });
-      return data;
-    } catch (err) {
-      console.error("Failed to submit respondent response:", err);
-      setError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId]);
-
-  // ==================== Judge Questions ====================
-  const getJudgeQuestions = useCallback(async () => {
-    if (!sessionId) throw new Error("No sessionId available");
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiGetJudgeQuestions(sessionId);
-      console.log("Judge questions retrieved:", data);
-      return data;
-    } catch (err) {
-      console.error("Failed to get judge questions:", err);
-      setError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId]);
-
-  // ==================== Conclude Moot ====================
-  const concludeMoot = useCallback(async () => {
-    if (!sessionId) throw new Error("No sessionId available");
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await apiConcludeMoot(sessionId);
-      console.log("Moot concluded:", data);
-      setSessionId(null);
-      setStatus(null);
-      setTranscript([]);
-      return data;
-    } catch (err) {
-      console.error("Failed to conclude moot:", err);
       setError(err);
       throw err;
     } finally {
@@ -213,18 +143,14 @@ export const useAIFight = () => {
 
   return {
     sessionId,
-    status,
     transcript,
     loading,
     error,
+    nextTurn,
+    awaitingFrom,
+    judgeQuestion,
     initiateMoot,
-    getStatus,
-    getTranscript,
-    submitPetitionerArgument,
-    submitPetitionerResponse,
-    submitRespondentRebuttal,
-    submitRespondentResponse,
-    getJudgeQuestions,
-    concludeMoot
+    submitUserTurn,
+    endMootSession,
   };
 };

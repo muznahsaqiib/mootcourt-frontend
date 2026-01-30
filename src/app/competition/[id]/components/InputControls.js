@@ -15,23 +15,25 @@ export default function InputControls({
   const disabled = loading || !sessionId;
 
   return (
-    <div className="w-full p-4 bg-slate-900/95 flex gap-3 items-center justify-center border-t border-slate-700">
+    <div className="w-full p-4 bg-gradient-to-t from-stone-100/90 via-rose-50/80 to-gray-200/80 backdrop-blur-md flex gap-3 items-center justify-center border-t-2 border-rose-300 rounded-t-3xl">
 
       {/* Input */}
       <input
         value={userInput}
         onChange={(e) => setUserInput(e.target.value)}
-        placeholder={sessionId ? placeholder : "Waiting for session to start..."}
+        placeholder={sessionId ? placeholder : "Initializing session..."}
         disabled={disabled}
         className="
-          px-4 py-2 w-[22rem]
-          rounded-full
-          bg-slate-800
-          text-slate-100
-          placeholder-slate-400
-          border border-slate-600
-          focus:outline-none focus:ring-2 focus:ring-amber-400
-          disabled:opacity-60
+          px-6 py-3 w-[28rem]
+          rounded-2xl
+          bg-stone-100/50 backdrop-blur-sm
+          text-stone-700
+          placeholder-stone-400
+          border-2 border-rose-300/50
+          focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 focus:bg-stone-100
+          disabled:opacity-50 disabled:cursor-not-allowed
+          text-base font-sans
+          transition-all duration-200
         "
       />
 
@@ -42,30 +44,32 @@ export default function InputControls({
           handleSubmitArgument();
         }}
         disabled={disabled}
-        title={disabled ? (loading ? "Loading…" : "Waiting for session") : "Submit argument"}
+        title={disabled ? (loading ? "Processing…" : "Waiting for session") : "Submit argument"}
         className={`
-          px-6 py-2 rounded-full font-semibold
-          transition-all
+          px-8 py-3 rounded-2xl font-bold text-base font-sans tracking-wide
+          transition-all duration-200 transform
           ${disabled
-            ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
-            : 'bg-gradient-to-r from-amber-500 to-orange-600 text-black hover:scale-[1.02]'
+            ? 'bg-stone-200/50 text-stone-400 cursor-not-allowed border-2 border-stone-300'
+            : 'bg-gradient-to-r from-rose-300 to-rose-400 text-white hover:scale-105 hover:shadow-lg hover:shadow-rose-300/50 border-2 border-rose-300'
           }
         `}
       >
-        {loading ? 'Sending…' : 'Submit'}
+        {loading ? 'PROCESSING…' : 'SUBMIT'}
       </button>
 
       {/* Clear */}
       <button
         onClick={clearInput}
+        disabled={disabled}
         className="
-          px-4 py-2 rounded-full
-          bg-slate-700 text-slate-200
-          hover:bg-slate-600
-          transition
+          px-6 py-3 rounded-2xl font-semibold font-sans text-base tracking-wide
+          bg-stone-200 text-stone-700 border-2 border-stone-300
+          hover:bg-stone-100 hover:border-stone-400 hover:shadow-md
+          transition-all duration-200
+          disabled:opacity-50 disabled:cursor-not-allowed
         "
       >
-        Clear
+        CLEAR
       </button>
 
       {/* End Session */}
@@ -73,13 +77,13 @@ export default function InputControls({
         <button
           onClick={onEndSession}
           className="
-            px-4 py-2 rounded-full
-            bg-rose-600 text-white
-            hover:bg-rose-700
-            transition
+            px-6 py-3 rounded-2xl font-semibold font-sans text-base tracking-wide
+            bg-gradient-to-r from-rose-400 to-rose-500 text-white border-2 border-rose-400
+            hover:scale-105 hover:shadow-lg hover:shadow-rose-300/50
+            transition-all duration-200
           "
         >
-          Quit & Save
+          END
         </button>
       )}
     </div>

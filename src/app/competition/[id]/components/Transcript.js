@@ -1,43 +1,41 @@
 export default function Transcript({ history }) {
-  return (
-    <div className="fixed top-16 left-1/2 -translate-x-1/2 w-[60rem] max-w-full h-[28rem] overflow-y-auto bg-white/95 rounded-2xl shadow-xl border border-blue-300 p-4 z-50 flex flex-col">
-      <h3 className="text-2xl font-bold text-blue-700 mb-4 text-center">Courtroom Transcript</h3>
-
-      <div className="flex-1 flex flex-col gap-3">
-        {(!history || history.length === 0) && (
-          <div className="text-center text-gray-500 py-4">No arguments yet.</div>
-        )}
-
-        {history && history.map((item, idx) => {
-          // Handle different possible formats
-          const role = item.role || item.speaker || item.type || 'unknown';
-          const text = item.text || item.content || item.message || '';
-          const timestamp = item.timestamp || item.time || '';
-
-          return (
-            <div
-              key={idx}
-              className={`max-w-[85%] px-4 py-3 rounded-xl ${
-                role.toLowerCase().includes('petitioner') || role === 'user'
-                  ? 'self-end bg-yellow-200 text-yellow-900'
-                  : role.toLowerCase().includes('respondent') || role.toLowerCase().includes('ai')
-                  ? 'self-start bg-blue-200 text-blue-900'
-                  : 'self-center bg-gray-200 text-gray-900'
-              } shadow`}
-            >
-              <div className="font-semibold mb-1">
-                {role === 'user' ? 'You' :
-                 role.toLowerCase().includes('petitioner') ? 'Petitioner' :
-                 role.toLowerCase().includes('respondent') ? 'Respondent' :
-                 role.toLowerCase().includes('judge') ? 'Judge' :
-                 role.charAt(0).toUpperCase() + role.slice(1)}
-                {timestamp && <span className="text-xs ml-2 opacity-70">({timestamp})</span>}
-              </div>
-              <div className="whitespace-pre-line">{text}</div>
-            </div>
-          );
-        })}
+  if (!history || history.length === 0) {
+    return (
+      <div className="text-center text-stone-400 py-8">
+        <p className="text-base font-sans font-semibold">Awaiting opening statements...</p>
+        <p className="text-xs mt-2 text-stone-500">Court record will appear here</p>
       </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 px-2">
+      {history.map((item, idx) => (
+        <div
+          key={idx}
+          className={`p-3 rounded-2xl border-l-4 shadow-md backdrop-blur-sm transition-all duration-200 ${item.role === "judge"
+              ? "bg-gradient-to-r from-yellow-100/30 to-yellow-200/20 border-yellow-400 text-yellow-800"
+              : item.role === "petitioner"
+                ? "bg-gradient-to-r from-rose-100/30 to-rose-200/20 border-rose-400 text-rose-800"
+                : item.role === "respondent"
+                  ? "bg-gradient-to-r from-indigo-100/30 to-indigo-200/20 border-indigo-400 text-indigo-800"
+                  : "bg-stone-100/30 border-stone-400 text-stone-800"
+            }`}
+        >
+          <div className="flex items-center justify-between mb-1">
+            <strong className="text-xs font-black uppercase tracking-wide font-sans">
+              {item.role === "petitioner" ? "🎯 PETITIONER" :
+                item.role === "respondent" ? "🤖 RESPONDENT" :
+                  item.role === "judge" ? "⚖ BENCH" :
+                    item.role}
+            </strong>
+            <span className="text-xs opacity-70 font-sans font-semibold">
+              {item.type || "statement"}
+            </span>
+          </div>
+          <p className="text-sm leading-relaxed font-sans">{item.text}</p>
+        </div>
+      ))}
     </div>
   );
 }
