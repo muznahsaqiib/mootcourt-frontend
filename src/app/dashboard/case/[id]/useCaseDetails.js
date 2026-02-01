@@ -14,13 +14,16 @@ export default function useCaseDetails(id) {
   useEffect(() => {
     if (!id) return;
 
+    // Clean the ID: remove quotes from frontend if any
+    const cleanId = id.replace(/^['"]|['"]$/g, '');
+
     const fetchData = async () => {
       dispatch(startLoading());
 
       try {
         const [summaryRes, mootRes] = await Promise.all([
-          fetch(`http://localhost:8000/cases/${id}`),
-          fetch(`http://localhost:8000/moot-problems/${id}`),
+          fetch(`http://localhost:8000/cases/${cleanId}`),
+          fetch(`http://localhost:8000/moot-problems/${cleanId}`),
         ]);
 
         if (!summaryRes.ok || !mootRes.ok) {
@@ -33,11 +36,13 @@ export default function useCaseDetails(id) {
         setSummaryData(summaryJson);
         setMootData(mootJson);
 
-        // ✅ EXTRACT CASE TYPE
-        setCaseType(summaryJson.case_type);
+        // Extract case type for downstream usage
+        setCaseType(summaryJson.case_type || null);
 
       } catch (error) {
         console.error('Error fetching case details:', error);
+        setSummaryData(null);
+        setMootData(null);
       } finally {
         dispatch(stopLoading());
       }
@@ -49,6 +54,6 @@ export default function useCaseDetails(id) {
   return {
     summaryData,
     mootData,
-    caseType
+    caseType,
   };
 }

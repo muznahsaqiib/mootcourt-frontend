@@ -8,21 +8,27 @@ import { useDispatch } from 'react-redux';
 import { startLoading, stopLoading } from '../../../store/slices/loadingSlice';
 import { useRouter } from 'next/navigation';
 import { COMPETITION_ROUTE } from '../../../../utils/routes.constant';
+
 export default function CaseDetailsPage() {
-  const { id } = useParams();
-  const { summaryData, mootData} = useCaseDetails(id);
+  const { id: rawId } = useParams();
+
+  // Clean the ID (remove quotes) before passing
+  const id = rawId ? rawId.replace(/['"]/g, "") : null;
+
+  const { summaryData, mootData } = useCaseDetails(id);
   const [view, setView] = useState('summary');
   const dispatch = useDispatch();
-
   const router = useRouter();
+
   const handleNavigate = () => {
     dispatch(startLoading());
     router.push(COMPETITION_ROUTE(id));
   };
+
   useEffect(() => {
     dispatch(startLoading());
     return () => dispatch(stopLoading());
-  }, [ dispatch]);
+  }, [dispatch]);
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-800 py-10 px-4">
@@ -39,13 +45,13 @@ export default function CaseDetailsPage() {
           <h1 className="text-4xl font-extrabold text-rose-800 mb-6 drop-shadow">
             {summaryData?.title || mootData?.title}
           </h1>
-          
+
           <div className="flex gap-4 mb-6">
             <button
               onClick={() => setView('summary')}
               className={`px-4 py-2 rounded-lg border font-semibold transition ${view === 'summary'
-                  ? 'bg-rose-800 text-white border-rose-800'
-                  : 'border-rose-800 text-rose-800 hover:bg-rose-100'
+                ? 'bg-rose-800 text-white border-rose-800'
+                : 'border-rose-800 text-rose-800 hover:bg-rose-100'
                 }`}
             >
               Summary
@@ -53,8 +59,8 @@ export default function CaseDetailsPage() {
             <button
               onClick={() => setView('moot')}
               className={`px-4 py-2 rounded-lg border font-semibold transition ${view === 'moot'
-                  ? 'bg-rose-800 text-white border-rose-800'
-                  : 'border-rose-800 text-rose-800 hover:bg-rose-100'
+                ? 'bg-rose-800 text-white border-rose-800'
+                : 'border-rose-800 text-rose-800 hover:bg-rose-100'
                 }`}
             >
               Moot Problem
