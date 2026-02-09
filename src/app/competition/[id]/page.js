@@ -58,14 +58,17 @@ export default function AIFightCourtroom() {
   const handleEndSession = async () => {
     try {
       const data = await endMootSession();
+
+      // ✅ SAVE FOR EVALUATION PAGE
+      localStorage.setItem('latestEvaluation', JSON.stringify(data));
+
       setEvaluationData(data);
       setShowEndModal(true);
-      setEvaluationReady(true); // ✅ mark evaluation ready
+      setEvaluationReady(true);
     } catch (err) {
       console.error('Failed to end session:', err);
     }
   };
-
 
   // ------------------ Placeholder text ------------------
   const placeholder = sessionId
