@@ -1,21 +1,15 @@
 'use client';
 
-import { useSelector } from 'react-redux';
-
-export default function ProfileComponent({ user, stats = [] }) {
-  const loading = useSelector((state) => state.loading.isLoading);
+export default function ProfileComponent({ user, stats = [], loading }) {
+  if (loading) return <p className="text-center">Loading...</p>;
 
   const totalSessions = stats.length;
 
-  /* ---------- SAFE HELPERS ---------- */
   const avg = (arr) =>
-    arr.length === 0
-      ? '—'
-      : (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1);
+    arr.length === 0 ? '—' : (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1);
 
-  /* ---------- ANALYTICS ---------- */
   const avgScore = totalSessions
-    ? avg(stats.map(s => s.result?.user_score).filter(Boolean))
+    ? avg(stats.map((s) => s.result?.user_score).filter(Boolean))
     : '—';
 
   const totalPracticeMinutes = Math.floor(
@@ -24,39 +18,32 @@ export default function ProfileComponent({ user, stats = [] }) {
 
   const clarity = avg(
     stats
-      .map(s => s.result?.detailed_scores_user?.clarity)
-      .filter(v => typeof v === 'number')
+      .map((s) => s.result?.detailed_scores_user?.clarity)
+      .filter((v) => typeof v === 'number')
   );
 
   const responsiveness = avg(
     stats
-      .map(s => s.result?.detailed_scores_user?.responsiveness)
-      .filter(v => typeof v === 'number')
+      .map((s) => s.result?.detailed_scores_user?.responsiveness)
+      .filter((v) => typeof v === 'number')
   );
 
   const structure = avg(
     stats
-      .map(s => s.result?.detailed_scores_user?.structure)
-      .filter(v => typeof v === 'number')
+      .map((s) => s.result?.detailed_scores_user?.structure)
+      .filter((v) => typeof v === 'number')
   );
 
-  /* ---------- UI ---------- */
   return (
     <div className="min-h-screen bg-stone-50 py-20 px-4">
-
       {user ? (
         <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-10 flex flex-col md:flex-row gap-10">
-
           {/* LEFT */}
           <div className="md:w-1/3 flex flex-col items-center">
             <div className="w-28 h-28 rounded-full bg-rose-200 flex items-center justify-center text-5xl font-bold text-rose-800">
               {user.username[0].toUpperCase()}
             </div>
-
-            <h1 className="mt-4 text-2xl font-extrabold text-rose-800">
-              {user.username}
-            </h1>
-
+            <h1 className="mt-4 text-2xl font-extrabold text-rose-800">{user.username}</h1>
             <div className="mt-6 w-full space-y-3 text-sm">
               <div className="flex justify-between border-b pb-2">
                 <span>Email</span>
@@ -67,7 +54,6 @@ export default function ProfileComponent({ user, stats = [] }) {
 
           {/* RIGHT */}
           <div className="md:w-2/3 space-y-8">
-
             {/* SUMMARY */}
             <div>
               <h2 className="text-xl font-bold mb-4">Analytics</h2>
@@ -91,7 +77,6 @@ export default function ProfileComponent({ user, stats = [] }) {
             {/* HISTORY */}
             <div>
               <h3 className="font-bold mb-3">Session History</h3>
-
               {stats.length === 0 ? (
                 <p className="text-stone-500">No sessions yet.</p>
               ) : (
@@ -102,36 +87,29 @@ export default function ProfileComponent({ user, stats = [] }) {
                       className="p-4 rounded-xl bg-stone-100 flex justify-between"
                     >
                       <div>
-                        <p className="font-semibold">
-                          {s.case_title || `Case ${s.case_id}`}
-                        </p>
+                        <p className="font-semibold">{s.case_title || `Case ${s.case_id}`}</p>
                         <p className="text-sm text-stone-600">
                           {Math.floor((s.duration_seconds || 0) / 60)}m
                         </p>
                       </div>
-
                       <div className="text-right">
                         <p className="text-sm text-stone-500">Score</p>
-                        <p className="text-xl font-bold">
-                          {s.result?.user_score ?? '—'}
-                        </p>
+                        <p className="text-xl font-bold">{s.result?.user_score ?? '—'}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-
           </div>
         </div>
-      ) : !loading && (
+      ) : (
         <p className="text-center text-red-500">Profile not found</p>
       )}
     </div>
   );
 }
 
-/* ---------- SMALL COMPONENT ---------- */
 function Stat({ label, value }) {
   return (
     <div className="bg-stone-100 rounded-xl p-4 text-center">

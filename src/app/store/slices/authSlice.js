@@ -98,6 +98,25 @@ export const fetchCurrentUser = createAsyncThunk(
         }
     }
 );
+// --- Fetch User History Thunk ---
+export const fetchUserHistory = createAsyncThunk(
+    "auth/fetchUserHistory",
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await fetch("http://localhost:8000/auth/user/history", {
+                method: "GET",
+                credentials: "include", // 🔥 REQUIRED
+            });
+
+            if (!res.ok) throw new Error("Failed to fetch history");
+
+            return await res.json();
+        } catch (err) {
+            return rejectWithValue(err.message);
+        }
+    }
+);
+
 
 // --- Logout Thunk ---
 
@@ -119,6 +138,8 @@ const authSlice = createSlice({
     name: "auth",
     initialState: {
         user: null,
+        history: [],
+        loading: false,
         error: null,
     },
     reducers: {
@@ -174,6 +195,17 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || "Could not fetch user";
             });
+        builder
+            .addCase(fetchUserHistory.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchUserHistory.fulfilled, (state, action) => {
+                state.loading = false;
+                state.history = action.payload;   // 🔥 IMPORTANT
+            })
+            .addCase(fetchUserHistory.rejected, (state) => {
+                state.loading = false;
+            });
 
         // LOGOUT
         builder
@@ -193,4 +225,5 @@ const authSlice = createSlice({
 
 });
 export const { clearError } = authSlice.actions;
+export { loginUser, registerUser, fetchCurrentUser, fetchUserHistory, logoutUser };
 export default authSlice.reducer;
