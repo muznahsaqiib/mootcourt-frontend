@@ -5,34 +5,30 @@ export default function ProfileComponent({ user, stats = [], loading }) {
 
   const totalSessions = stats.length;
 
-  const avg = (arr) =>
-    arr.length === 0 ? '—' : (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1);
+  const avg = (arr) => {
+    const valid = arr.filter((v) => typeof v === "number");
+    if (!valid.length) return "—";
+    return (valid.reduce((a, b) => a + b, 0) / valid.length).toFixed(1);
+  };
 
-  const avgScore = totalSessions
-    ? avg(stats.map((s) => s.result?.user_score).filter(Boolean))
-    : '—';
+  const avgScore = avg(stats.map((s) => s.result?.user_score));
 
   const totalPracticeMinutes = Math.floor(
     stats.reduce((sum, s) => sum + (s.duration_seconds || 0), 0) / 60
   );
 
   const clarity = avg(
-    stats
-      .map((s) => s.result?.detailed_scores_user?.clarity)
-      .filter((v) => typeof v === 'number')
+    stats.map((s) => s.result?.detailed_scores_user?.clarity)
   );
 
   const responsiveness = avg(
-    stats
-      .map((s) => s.result?.detailed_scores_user?.responsiveness)
-      .filter((v) => typeof v === 'number')
+    stats.map((s) => s.result?.detailed_scores_user?.responsiveness)
   );
 
   const structure = avg(
-    stats
-      .map((s) => s.result?.detailed_scores_user?.structure)
-      .filter((v) => typeof v === 'number')
+    stats.map((s) => s.result?.detailed_scores_user?.structure)
   );
+
 
   return (
     <div className="min-h-screen bg-stone-50 py-20 px-4">
