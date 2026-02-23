@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 import Flags from './components/Flags';
 import JudgePanel from './components/JudgePanel';
@@ -33,11 +33,17 @@ export default function AIFightCourtroom() {
     initiateMoot,
     submitUserTurn,
     endMootSession,
+    judgeAudioBase64,
+    respondentAudioBase64,
   } = useAIFight();
 
   const [showEndModal, setShowEndModal] = useState(false);
   const [evaluationData, setEvaluationData] = useState(null);
   const [evaluationReady, setEvaluationReady] = useState(false);
+
+  // Refs to hold audio objects so we can stop them
+  const judgeAudioRef = useRef(null);
+  const respondentAudioRef = useRef(null);
 
   // ------------------ Initiate session ------------------
   useEffect(() => {
@@ -45,6 +51,47 @@ export default function AIFightCourtroom() {
       initiateMoot(id, caseType).catch(console.error);
     }
   }, [id, caseType, sessionId, initiateMoot]);
+
+  // ------------------ Play TTS when judge/respondent audio updates ------------------
+  useEffect(() => {
+    // Stop previous audios
+    if (judgeAudioRef.current) {
+      judgeAudioRef.current.pause();
+      judgeAudioRef.current = null;
+    }
+    if (respondentAudioRef.current) {
+      respondentAudioRef.current.pause();
+      respondentAudioRef.current = null;
+    }
+
+    // Play new judge audio
+    if (judgeAudioBase64) {
+      const audio = new Audio(`data:audio/mp3;base64,${judgeAudioBase64}`);
+      audio.play().catch(console.error);
+      judgeAudioRef.current = audio;
+    }
+
+    // Play new respondent audio
+    if (respondentAudioBase64) {
+      const audio = new Audio(`data:audio/mp3;base64,${respondentAudioBase64}`);
+      audio.play().catch(console.error);
+      respondentAudioRef.current = audio;
+    }
+  }, [judgeAudioBase64, respondentAudioBase64]);
+
+  // ------------------ Stop audios when session ends ------------------
+  useEffect(() => {
+    if (nextTurn === 'SESSION_END') {
+      if (judgeAudioRef.current) {
+        judgeAudioRef.current.pause();
+        judgeAudioRef.current = null;
+      }
+      if (respondentAudioRef.current) {
+        respondentAudioRef.current.pause();
+        respondentAudioRef.current = null;
+      }
+    }
+  }, [nextTurn]);
 
   // ------------------ Submit handler ------------------
   const handleSubmit = async () => {
@@ -64,6 +111,16 @@ export default function AIFightCourtroom() {
       setEvaluationData(data);
       setShowEndModal(true);
       setEvaluationReady(true);
+
+      // Stop any ongoing audio
+      if (judgeAudioRef.current) {
+        judgeAudioRef.current.pause();
+        judgeAudioRef.current = null;
+      }
+      if (respondentAudioRef.current) {
+        respondentAudioRef.current.pause();
+        respondentAudioRef.current = null;
+      }
     } catch (err) {
       console.error('Failed to end session:', err);
     }
@@ -72,12 +129,14 @@ export default function AIFightCourtroom() {
   const placeholder = sessionId
     ? judgeQuestion
       ? 'Reply to judge question...'
-      : `Your turn: ${awaitingFrom}`
+      : `Your turn: ${awaitingFrom || 'waiting'}`
     : 'Waiting for session to start...';
+
+  // ------------------ Safe transcript ------------------
+  const safeTranscript = Array.isArray(transcript) ? transcript : [];
 
   return (
     <div className="w-screen h-screen bg-gradient-to-br from-stone-100 via-rose-50 to-gray-200 flex flex-col overflow-hidden relative">
-
       {/* Flags */}
       <Flags />
 
@@ -85,7 +144,7 @@ export default function AIFightCourtroom() {
       <div className="w-full h-20 bg-gradient-to-r from-rose-300 via-stone-300 to-gray-300 border-b-2 border-rose-400 flex items-center justify-center shadow-md relative overflow-hidden">
         <div className="relative z-10 flex items-center gap-4">
           <div className="w-3 h-10 bg-gradient-to-b from-rose-400 to-rose-200 rounded-full"></div>
-          <h1 className="text-4xl font-black text-rose-700 tracking-wider font-sans drop-shadow-md">MOOT COURT ARENA</h1>
+          <h1 className="text-4xl font-black text-rose-700 tracking-wider font-sans drop-shadow-md"></h1>
           <div className="w-3 h-10 bg-gradient-to-b from-rose-400 to-rose-200 rounded-full"></div>
         </div>
       </div>
@@ -122,7 +181,7 @@ export default function AIFightCourtroom() {
               <div className="relative z-10">
                 <h3 className="text-rose-700 font-black text-center mb-4 text-lg tracking-wide font-sans drop-shadow-sm">COURT RECORD</h3>
                 <div className="h-80 overflow-y-auto">
-                  <Transcript history={transcript} />
+                  <Transcript history={safeTranscript} />
                 </div>
               </div>
             </div>
@@ -142,6 +201,7 @@ export default function AIFightCourtroom() {
                   loading={loading}
                   sessionId={sessionId}
                   placeholder={placeholder}
+                  disabled={mode === 'oral'}
                 />
               ) : (
                 <OralControls sessionId={sessionId} submitUserTurn={submitUserTurn} />
