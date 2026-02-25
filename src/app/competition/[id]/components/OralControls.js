@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 
-export default function OralControls({ sessionId, submitUserTurn }) {
+export default function OralControls({ sessionId, nextTurn, submitOralTurn }) {
     const [recording, setRecording] = useState(false);
     const [transcribedText, setTranscribedText] = useState('');
     const mediaRecorderRef = useRef(null);
@@ -21,47 +21,11 @@ export default function OralControls({ sessionId, submitUserTurn }) {
 
             mediaRecorderRef.current.onstop = async () => {
                 const blob = new Blob(audioChunks.current, { type: 'audio/webm' });
-
-                const formData = new FormData();
-                formData.append("file", blob);
-                formData.append("session_id", sessionId);
-
                 try {
-                    const res = await fetch(
-                        `http://localhost:8000/moot/petitioner/argument/audio`,
-                        {
-                            method: "POST",
-                            body: formData,
-                            credentials: "include",
-                        }
-                    );
-
-                    if (!res.ok) {
-                        throw new Error(`Server error: ${res.status}`);
+                    const data = await submitOralTurn(blob);
+                    if (data) {
+                        setTranscribedText(data.transcribed_text || '');
                     }
-
-                    const data = await res.json();
-
-                    const text = data.transcribed_text || '';
-                    setTranscribedText(text);
-
-                    // 🔥 Update transcript using your existing logic
-                    if (text) {
-                        await submitUserTurn(text);
-                    }
-
-                    // 🎧 Play Judge audio
-                    if (data.judge_audio) {
-                        const judgeAudio = new Audio(`data:audio/wav;base64,${data.judge_audio}`);
-                        judgeAudio.play();
-                    }
-
-                    // 🎧 Play Respondent audio
-                    if (data.respondent_audio) {
-                        const respondentAudio = new Audio(`data:audio/wav;base64,${data.respondent_audio}`);
-                        respondentAudio.play();
-                    }
-
                 } catch (err) {
                     console.error('Audio submission failed:', err);
                 }

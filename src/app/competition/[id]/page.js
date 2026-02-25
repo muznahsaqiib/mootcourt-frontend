@@ -32,6 +32,7 @@ export default function AIFightCourtroom() {
     judgeQuestion,
     initiateMoot,
     submitUserTurn,
+    submitOralTurn,
     endMootSession,
     judgeAudioBase64,
     respondentAudioBase64,
@@ -66,14 +67,14 @@ export default function AIFightCourtroom() {
 
     // Play new judge audio
     if (judgeAudioBase64) {
-      const audio = new Audio(`data:audio/mp3;base64,${judgeAudioBase64}`);
+      const audio = new Audio(`data:audio/wav;base64,${judgeAudioBase64}`);
       audio.play().catch(console.error);
       judgeAudioRef.current = audio;
     }
 
     // Play new respondent audio
     if (respondentAudioBase64) {
-      const audio = new Audio(`data:audio/mp3;base64,${respondentAudioBase64}`);
+      const audio = new Audio(`data:audio/wav;base64,${respondentAudioBase64}`);
       audio.play().catch(console.error);
       respondentAudioRef.current = audio;
     }
@@ -204,7 +205,7 @@ export default function AIFightCourtroom() {
                   disabled={mode === 'oral'}
                 />
               ) : (
-                <OralControls sessionId={sessionId} submitUserTurn={submitUserTurn} />
+                <OralControls sessionId={sessionId} nextTurn={nextTurn} submitOralTurn={submitOralTurn} />
               )}
 
               <button
