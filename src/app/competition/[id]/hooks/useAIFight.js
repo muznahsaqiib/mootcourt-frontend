@@ -13,7 +13,6 @@ export const useAIFight = () => {
   const [judgeAudioBase64, setJudgeAudioBase64] = useState(null);
   const [respondentAudioBase64, setRespondentAudioBase64] = useState(null);
 
-  // Refs to track active audio so we can cancel
   const activeAudioRef = useRef(null);
 
   // ------------------ AUDIO HELPER ------------------
@@ -36,7 +35,6 @@ export const useAIFight = () => {
     });
   }, [stopAudio]);
 
-  // Play a sequence of audio clips one after another
   const playSequence = useCallback(async (...base64Clips) => {
     for (const clip of base64Clips) {
       if (clip) await playAudio(clip);
@@ -72,57 +70,58 @@ export const useAIFight = () => {
     }
   }, []);
 
-  // ------------------ RESPONDENT RAG ------------------
-  const triggerRAG = useCallback(async (currentSessionId) => {
+  // ------------------ RESPONDENT RAG (SSE streaming) ------------------
+  const triggerRAG = useCallback((currentSessionId) => {
     if (!currentSessionId) return;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 180000); // 3 min: RAG + 3x TTS calls
+    setLoading(true);
+    setError(null);
 
-    try {
-      const res = await fetch(`${API}/moot/respondent/rag?session_id=${currentSessionId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      if (!res.ok) throw new Error(`RAG error: ${res.status}`);
+    const es = new EventSource(
+      `${API}/moot/respondent/rag/stream?session_id=${currentSessionId}`,
+      { withCredentials: true }
+    );
 
-      const data = await res.json();
-      const ts = new Date();
+    // Step 1 — respondent argument arrives first, show + play immediately
+    es.addEventListener("respondent_argument", async (e) => {
+      const { text, audio } = JSON.parse(e.data);
+      setTranscript(prev => [...prev, { role: "respondent", text, timestamp: new Date() }]);
+      setRespondentAudioBase64(audio || null);
+      if (audio) await playAudio(audio);
+    });
 
-      setTranscript(prev => [
-        ...prev,
-        { role: "respondent", text: data.respondent_argument, timestamp: ts },
-        ...(data.judge_question ? [{ role: "judge", text: data.judge_question, timestamp: ts }] : []),
-        ...(data.respondent_reply ? [{ role: "respondent", text: data.respondent_reply, timestamp: ts }] : []),
-      ]);
+    // Step 2 — judge question arrives next, show + play immediately
+    es.addEventListener("judge_question", async (e) => {
+      const { text, audio } = JSON.parse(e.data);
+      setTranscript(prev => [...prev, { role: "judge", text, timestamp: new Date() }]);
+      setJudgeQuestion(text);
+      setJudgeAudioBase64(audio || null);
+      if (audio) await playAudio(audio);
+    });
 
-      setNextTurn(data.next_turn);
-      setJudgeQuestion(data.judge_question || null);
-      setJudgeAudioBase64(data.judge_audio || null);
-      setRespondentAudioBase64(data.respondent_audio || null);
+    // Step 3 — respondent reply to judge, show + play immediately
+    es.addEventListener("respondent_reply", async (e) => {
+      const { text, audio } = JSON.parse(e.data);
+      setTranscript(prev => [...prev, { role: "respondent", text, timestamp: new Date() }]);
+      if (audio) await playAudio(audio);
+    });
 
-      // Play: respondent → judge → respondent reply (sequential)
-      await playSequence(
-        data.respondent_audio,
-        data.judge_audio,
-        data.respondent_reply_audio
-      );
+    // Step 4 — all done, unlock UI
+    es.addEventListener("done", (e) => {
+      const { next_turn } = JSON.parse(e.data);
+      setNextTurn(next_turn);
+      setLoading(false);
+      es.close();
+    });
 
-    } catch (err) {
-      clearTimeout(timeout);
-      if (err.name === "AbortError") {
-        console.warn("RAG timed out — respondent may still be processing");
-        setError(new Error("Respondent is taking longer than expected. You may continue or wait."));
-      } else {
-        console.error("RAG fetch failed:", err);
-        setError(new Error(`Respondent error: ${err.message}`));
-      }
-      setNextTurn("PETITIONER_REBUTTAL"); // always allow user to continue
-    }
-  }, [playSequence]);
+    es.onerror = () => {
+      console.error("SSE stream error");
+      setError(new Error("Respondent stream failed. You may continue."));
+      setNextTurn("PETITIONER_REBUTTAL");
+      setLoading(false);
+      es.close();
+    };
+  }, [playAudio]);
 
   // ------------------ SUBMIT TEXT TURN ------------------
   const submitUserTurn = useCallback(async (text) => {
@@ -156,7 +155,6 @@ export const useAIFight = () => {
         ...(data.judge_question ? [{ role: "judge", text: data.judge_question, timestamp: ts }] : []),
       ]);
 
-      // Don't auto-advance to SESSION_END — wait for user to click END SESSION
       const nextTurnToSet = data.next_turn === "SESSION_END" ? "AWAITING_END" : data.next_turn;
       setNextTurn(nextTurnToSet);
       setJudgeQuestion(data.judge_question || null);
@@ -210,18 +208,15 @@ export const useAIFight = () => {
         ...(data.judge_question ? [{ role: "judge", text: data.judge_question, timestamp: ts }] : []),
       ]);
 
-      // Don't auto-advance to SESSION_END — wait for user to click END SESSION
       const nextTurnToSet = data.next_turn === "SESSION_END" ? "AWAITING_END" : data.next_turn;
       setNextTurn(nextTurnToSet);
       setJudgeQuestion(data.judge_question || null);
       setJudgeAudioBase64(data.judge_audio || null);
 
-      // Play judge audio first if present
       if (data.judge_audio) {
         await playAudio(data.judge_audio);
       }
 
-      // Then trigger RAG which will play respondent audio
       if (data.next_turn === "RESPONDENT_RAG") {
         triggerRAG(sessionId);
       }
@@ -242,14 +237,12 @@ export const useAIFight = () => {
     stopAudio();
 
     try {
-      // Step 1: Force session to SESSION_END state if it isn't already
-      // by submitting an empty rebuttal — backend accepts empty text
       if (nextTurn && nextTurn !== "SESSION_END" && nextTurn !== "AWAITING_END") {
         const forceEndMap = {
           PETITIONER_ARGUMENT: `/moot/petitioner/argument`,
           PETITIONER_REPLY_TO_JUDGE: `/moot/petitioner/reply`,
           PETITIONER_REBUTTAL: `/moot/petitioner/rebut`,
-          RESPONDENT_RAG: null, // can't force this, just try evaluate anyway
+          RESPONDENT_RAG: null,
         };
         const endpoint = forceEndMap[nextTurn];
         if (endpoint) {
@@ -259,7 +252,6 @@ export const useAIFight = () => {
             credentials: "include",
             body: JSON.stringify({ text: "[Session ended by user]" }),
           });
-          // If it was PETITIONER_ARGUMENT or REPLY, we need to also do rebuttal
           if (nextTurn === "PETITIONER_ARGUMENT" || nextTurn === "PETITIONER_REPLY_TO_JUDGE") {
             await fetch(`${API}/moot/petitioner/rebut?session_id=${sessionId}`, {
               method: "POST",
@@ -271,7 +263,6 @@ export const useAIFight = () => {
         }
       }
 
-      // Step 2: Call evaluate
       const res = await fetch(`${API}/moot/evaluate?session_id=${sessionId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
