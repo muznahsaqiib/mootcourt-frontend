@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     eslint: {
-        // ✅ Prevent build from failing due to ESLint errors
         ignoreDuringBuilds: true,
     },
+    output: 'standalone',
 };
 
 export default nextConfig;

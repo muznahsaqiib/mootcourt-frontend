@@ -1,18 +1,18 @@
-import HomePage from '@/components/HomePage';          // landing page
-import UserHomePage from '@/components/UserHomePage';  // logged-in homepage
+import HomePage from '@/components/HomePage';          
+import UserHomePage from '@/components/UserHomePage';  
 import { cookies } from 'next/headers';
 
 export default async function Page() {
-  const cookieStore = await cookies();   // ✅ await here
+  const cookieStore = await cookies();   
   const sessionId = cookieStore.get("session_id");
 
   let user = null;
 
   if (sessionId) {
     try {
-      // Add timeout to prevent hanging
+      
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000); 
 
       const res = await fetch("http://localhost:8000/auth/me", {
         method: "GET",
@@ -30,7 +30,7 @@ export default async function Page() {
       }
     } catch (e) {
       console.error("Auth check failed:", e);
-      // If backend is not available, treat as not logged in
+    
       user = null;
     }
   }

@@ -225,5 +225,4 @@ const authSlice = createSlice({
 
 });
 export const { clearError } = authSlice.actions;
-export { loginUser, registerUser, fetchCurrentUser, fetchUserHistory, logoutUser };
 export default authSlice.reducer;
